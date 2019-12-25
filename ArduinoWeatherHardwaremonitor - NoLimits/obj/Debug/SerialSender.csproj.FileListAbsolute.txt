@@ -1,0 +1,14 @@
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\SerialSender.exe.config
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\SerialSender.exe
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\SerialSender.pdb
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\obj\Debug\SerialSender.csprojAssemblyReference.cache
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\obj\Debug\SerialSender.Properties.Resources.resources
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\obj\Debug\SerialSender.csproj.GenerateResource.cache
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\obj\Debug\SerialSender.csproj.CopyComplete
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\obj\Debug\SerialSender.exe
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\obj\Debug\SerialSender.pdb
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\LibreHardwareMonitorLib.dll
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\HidLibrary.dll
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\Newtonsoft.Json.dll
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\Newtonsoft.Json.pdb
+F:\uC\SerialMonitor-master\SerialMonitor-master\SerialSender\bin\Debug\Newtonsoft.Json.xml
