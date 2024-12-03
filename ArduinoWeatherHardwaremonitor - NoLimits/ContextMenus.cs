@@ -161,9 +161,9 @@ namespace SerialSender
             StateObjClass StateObj = new StateObjClass();
             StateObj.TimerCanceled = false;
             System.Threading.TimerCallback TimerDelegate = new System.Threading.TimerCallback(dataCheck);
-            System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
+            //System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
             System.Threading.Timer TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
-            System.Threading.Timer TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather
+            //System.Threading.Timer TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather
             StateObj.TimerReference = TimerItem;
             
         }
@@ -505,7 +505,29 @@ namespace SerialSender
            String datastream = "Computer Data: " + DownloadSpeed + UploadSpeed + RamUsed + RamAvail + GpuLoad + GpuFan + GpuMemory + GpuMemoryClock + GpuClock + GpuTemp + CpuFan + CpuPower +  coreNoTempStr[1] + coreNoTempStr[2] + coreNoTempStr[3] + coreNoTempStr[4] + coreNoClockStr[1] + coreNoClockStr[2] + coreNoClockStr[3] + coreNoClockStr[4] + coreNoLoadStr[1] + coreNoLoadStr[2] + coreNoLoadStr[3] + coreNoLoadStr[4] + " END ";
           SelectedSerialPort.WriteLine(datastream);
 
+
+
         }
+
+        public struct ComputerData
+        {
+            public float DownloadSpeed;
+            public float UploadSpeed;
+            public float RamUsed;
+            public float RamAvail;
+            public float GpuLoad;
+            public float GpuFan;
+            public float GpuMemory;
+            public float GpuMemoryClock;
+            public float GpuClock;
+            public float GpuTemp;
+            public float CpuFan;
+            public float CpuPower;
+            public float[] CoreNoTemp;
+            public float[] CoreNoClock;
+            public float[] CoreNoLoad;
+        }
+
         void Exit_Click(object sender, EventArgs e)
         {
             Application.Exit();
