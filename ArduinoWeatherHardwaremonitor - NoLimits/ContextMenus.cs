@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Xml;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 
 /// 
 /// <summary>
@@ -265,14 +266,14 @@ namespace SerialSender
             // enumerating all the hardware
             foreach (LibreHardwareMonitor.Hardware.IHardware hw in thisComputer.Hardware)
             {
-                Console.WriteLine("HARDWARE: " + hw.HardwareType);
+                //Console.WriteLine("HARDWARE: " + hw.HardwareType);
                 Console.ReadLine();
                 
                 hw.Update();
                 // searching for all sensors and adding data to listbox
                 foreach (LibreHardwareMonitor.Hardware.ISensor s in hw.Sensors)
                 {
-                    Console.WriteLine("NAME: " + s.Name + ", TYPE: " + s.SensorType + ", VALUE: " + s.Value);
+                    //Console.WriteLine("NAME: " + s.Name + ", TYPE: " + s.SensorType + ", VALUE: " + s.Value);
                     Console.ReadLine();
 // CPU  
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
@@ -283,10 +284,12 @@ namespace SerialSender
                             {
 
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
+                                int coreIndex = coreid - 1;
+
                                 string corenumber = coreid.ToString();
                                 string coreNoTemp = " - CPU#" + corenumber + "Temp: " + Convert.ToDouble(s.Value);
                                 
-                                coreNoTempStr[coreid] = coreNoTemp.ToString();
+                                coreNoTempStr[coreIndex] = coreNoTemp.ToString();
 
                                 //Console.WriteLine(coreNoTempStr[coreid]);
 
@@ -302,7 +305,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU":
-                                    CpuFan = " - CPU Fan: " + cpuFan.ToString();
+                                    CpuFan = cpuFan.ToString();
                                     break;
                             }
                         }
@@ -316,7 +319,7 @@ namespace SerialSender
                              switch (s.Name)
                              {
                                  case "CPU Package":
-                                    CpuPower = " - CPU Power " + cpuPower.ToString();
+                                    CpuPower = cpuPower.ToString();
                                      break;
                              }
                         }
@@ -330,10 +333,12 @@ namespace SerialSender
                             {
 
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
+                                int coreIndex = coreid - 1;
+
                                 string corenumber = coreid.ToString();
                                 string coreNoClock = " - CPU#" + corenumber + "Clock: " + s.Value;
 
-                                coreNoClockStr[coreid] = coreNoClock.ToString();
+                                coreNoClockStr[coreIndex] = coreNoClock.ToString();
 
                                // Console.WriteLine(coreNoClockStr[coreid]);
 
@@ -349,10 +354,12 @@ namespace SerialSender
                             {
 
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
+                                int coreIndex = coreid - 1;
+
                                 string corenumber = coreid.ToString();
                                 string coreNoLoad = " - CPU#" + corenumber + "Load: " + Math.Round(Convert.ToDouble(s.Value),2);
 
-                                coreNoLoadStr[coreid] = coreNoLoad.ToString();
+                                coreNoLoadStr[coreIndex] = coreNoLoad.ToString();
 
                                // Console.WriteLine(coreNoLoadStr[coreid]);
 
@@ -368,7 +375,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU Core":
-                                    GpuTemp = " - GPU Temp: " + gpuTemp.ToString();
+                                    GpuTemp = gpuTemp.ToString();
                                     break;
                             }
                         }
@@ -382,7 +389,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU Core":
-                                    GpuClock = " - GPU Clock: " + gpuClock.ToString();
+                                    GpuClock = gpuClock.ToString();
                                     break;
                             }
                         }
@@ -396,7 +403,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU Memory":
-                                    GpuMemoryClock = " - GPU Memory Clock: " + gpumemoryClock.ToString();
+                                    GpuMemoryClock = gpumemoryClock.ToString();
                                     break;
                             }
                         }
@@ -410,7 +417,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU Core":
-                                    GpuLoad = " - GPU Load: " + gpuLoad.ToString();
+                                    GpuLoad = gpuLoad.ToString();
                                     break;
                             }
                         }
@@ -424,7 +431,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU":
-                                    GpuFan = " - GPU Fan: " + gpuFan.ToString();
+                                    GpuFan = gpuFan.ToString();
                                     break;
                             }
                         }
@@ -438,7 +445,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "GPU Memory":
-                                    GpuMemory = " - GPU Memory: " + gpuMemory.ToString();
+                                    GpuMemory = gpuMemory.ToString();
                                     break;
                             }
                         }
@@ -454,7 +461,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "Memory Used":
-                                    RamUsed = " - Used RAM: " + ramUsed.ToString();
+                                    RamUsed = ramUsed.ToString();
                                     break;
                             }
                         }
@@ -467,7 +474,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "Memory Available":
-                                    RamAvail = " - Available RAM: " + ramAvail.ToString();
+                                    RamAvail = ramAvail.ToString();
                                     break;
                             }
                         }
@@ -481,7 +488,7 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "Upload Speed":
-                                    UploadSpeed = " - Upload Speed: " + uploadSpeed.ToString();
+                                    UploadSpeed = uploadSpeed.ToString();
                                     break;
                             }
                         }
@@ -495,37 +502,42 @@ namespace SerialSender
                             switch (s.Name)
                             {
                                 case "Download Speed":
-                                    DownloadSpeed = " - Download Speed: " + downloadSpeed.ToString();
+                                    DownloadSpeed = downloadSpeed.ToString();
                                     break;
                             }
                         }
                     }
                 }
             }
-           String datastream = "Computer Data: " + DownloadSpeed + UploadSpeed + RamUsed + RamAvail + GpuLoad + GpuFan + GpuMemory + GpuMemoryClock + GpuClock + GpuTemp + CpuFan + CpuPower +  coreNoTempStr[1] + coreNoTempStr[2] + coreNoTempStr[3] + coreNoTempStr[4] + coreNoClockStr[1] + coreNoClockStr[2] + coreNoClockStr[3] + coreNoClockStr[4] + coreNoLoadStr[1] + coreNoLoadStr[2] + coreNoLoadStr[3] + coreNoLoadStr[4] + " END ";
-          SelectedSerialPort.WriteLine(datastream);
 
 
+           //String datastream = "Computer Data: " + DownloadSpeed + UploadSpeed + RamUsed + RamAvail + GpuLoad + GpuFan + GpuMemory + GpuMemoryClock + GpuClock + GpuTemp + CpuFan + CpuPower +  coreNoTempStr[1] + coreNoTempStr[2] + coreNoTempStr[3] + coreNoTempStr[4] + coreNoClockStr[1] + coreNoClockStr[2] + coreNoClockStr[3] + coreNoClockStr[4] + coreNoLoadStr[1] + coreNoLoadStr[2] + coreNoLoadStr[3] + coreNoLoadStr[4] + " END ";
 
-        }
 
-        public struct ComputerData
-        {
-            public float DownloadSpeed;
-            public float UploadSpeed;
-            public float RamUsed;
-            public float RamAvail;
-            public float GpuLoad;
-            public float GpuFan;
-            public float GpuMemory;
-            public float GpuMemoryClock;
-            public float GpuClock;
-            public float GpuTemp;
-            public float CpuFan;
-            public float CpuPower;
-            public float[] CoreNoTemp;
-            public float[] CoreNoClock;
-            public float[] CoreNoLoad;
+            ComputerData computerData = new ComputerData
+            {
+                DownloadSpeed = DownloadSpeed,
+                UploadSpeed = UploadSpeed,
+                RamUsed = RamUsed,
+                RamAvail = RamAvail,
+                GpuLoad = GpuLoad,
+                GpuFan = GpuFan,
+                GpuMemory = GpuMemory,
+                GpuMemoryClock = GpuMemoryClock,
+                GpuClock = GpuClock,
+                GpuTemp = GpuTemp,
+                CpuFan = CpuFan,
+                CpuPower = CpuPower,
+                CoreNoTemp = coreNoTempStr,
+                CoreNoClock = coreNoClockStr,
+                CoreNoLoad = coreNoLoadStr
+            };
+
+            var json = JsonConvert.SerializeObject(computerData);
+
+            Console.WriteLine(json);
+
+            SelectedSerialPort.WriteLine(json);
         }
 
         void Exit_Click(object sender, EventArgs e)
