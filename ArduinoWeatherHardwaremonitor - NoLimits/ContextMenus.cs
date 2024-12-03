@@ -243,24 +243,22 @@ namespace SerialSender
         public void dataCheck(object StateObj)
         {
 
-            string GpuMemory = "";
-            string GpuFan = ""; 
-            string GpuLoad = "";
-            string GpuMemoryClock = "";
-            string GpuTemp = "";
-            string GpuClock = "";
-            string[] coreNoLoadStr;
-            coreNoLoadStr = new string[10];
-            string CpuPower = "";
-            string[] coreNoTempStr;
-            coreNoTempStr = new string[10];
-            string[] coreNoClockStr;
-            coreNoClockStr = new string[10];
-            string RamUsed = "";
-            string RamAvail = "";
-            string UploadSpeed = "";
-            string DownloadSpeed = "";
-            string CpuFan = "";
+            float GpuMemory = -1.0f;
+            float GpuFan = -1.0f;
+            float GpuLoad = -1.0f;
+            float GpuMemoryClock = -1.0f;
+            float GpuTemp = -1.0f;
+            float GpuClock = -1.0f;
+            float[] coreNoLoadStr = new float[10];
+            float CpuPower = -1.0f;
+            float[] coreNoTempStr = new float[10];
+            float[] coreNoClockStr = new float[10];
+            float RamUsed = -1.0f;
+            float RamAvail = -1.0f;
+            float UploadSpeed = -1.0f;
+            float DownloadSpeed = -1.0f;
+            float CpuFan = -1.0f;
+
             //;
             StateObjClass State = (StateObjClass)StateObj;
             // enumerating all the hardware
@@ -286,10 +284,10 @@ namespace SerialSender
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
                                 int coreIndex = coreid - 1;
 
-                                string corenumber = coreid.ToString();
-                                string coreNoTemp = " - CPU#" + corenumber + "Temp: " + Convert.ToDouble(s.Value);
+                                //string corenumber = coreid.ToString();
+                                //string coreNoTemp = "" + Convert.ToDouble(s.Value);
                                 
-                                coreNoTempStr[coreIndex] = coreNoTemp.ToString();
+                                coreNoTempStr[coreIndex] = (float)Convert.ToDouble(s.Value);
 
                                 //Console.WriteLine(coreNoTempStr[coreid]);
 
@@ -301,11 +299,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double cpuFan = Math.Round((double)s.Value, 2);
+                            float cpuFan = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "GPU":
-                                    CpuFan = cpuFan.ToString();
+                                    CpuFan = cpuFan;
                                     break;
                             }
                         }
@@ -315,11 +313,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                             double cpuPower = Math.Round((double)s.Value,2);
+                             float cpuPower = (float)Math.Round((double)s.Value,2);
                              switch (s.Name)
                              {
                                  case "CPU Package":
-                                    CpuPower = cpuPower.ToString();
+                                    CpuPower = cpuPower;
                                      break;
                              }
                         }
@@ -335,10 +333,10 @@ namespace SerialSender
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
                                 int coreIndex = coreid - 1;
 
-                                string corenumber = coreid.ToString();
-                                string coreNoClock = " - CPU#" + corenumber + "Clock: " + s.Value;
+                                //string corenumber = coreid.ToString();
+                                //string coreNoClock = "" + s.Value;
 
-                                coreNoClockStr[coreIndex] = coreNoClock.ToString();
+                                coreNoClockStr[coreIndex] = (float)s.Value;
 
                                // Console.WriteLine(coreNoClockStr[coreid]);
 
@@ -356,10 +354,10 @@ namespace SerialSender
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
                                 int coreIndex = coreid - 1;
 
-                                string corenumber = coreid.ToString();
-                                string coreNoLoad = " - CPU#" + corenumber + "Load: " + Math.Round(Convert.ToDouble(s.Value),2);
+                                //string corenumber = coreid.ToString();
+                                //string coreNoLoad = "" + Math.Round(Convert.ToDouble(s.Value),2);
 
-                                coreNoLoadStr[coreIndex] = coreNoLoad.ToString();
+                                coreNoLoadStr[coreIndex] = (float)Math.Round(Convert.ToDouble(s.Value), 2);
 
                                // Console.WriteLine(coreNoLoadStr[coreid]);
 
@@ -371,11 +369,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double gpuTemp = Math.Round((double)s.Value,2);
+                            float gpuTemp = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "GPU Core":
-                                    GpuTemp = gpuTemp.ToString();
+                                    GpuTemp = gpuTemp;
                                     break;
                             }
                         }
@@ -385,11 +383,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double gpuClock = Math.Round((double)s.Value,2);
+                            float gpuClock = (float)Math.Round((double)s.Value,2);
                             switch (s.Name)
                             {
                                 case "GPU Core":
-                                    GpuClock = gpuClock.ToString();
+                                    GpuClock = gpuClock;
                                     break;
                             }
                         }
@@ -399,11 +397,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double gpumemoryClock = Math.Round((double)s.Value,2);
+                            float gpumemoryClock = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "GPU Memory":
-                                    GpuMemoryClock = gpumemoryClock.ToString();
+                                    GpuMemoryClock = gpumemoryClock;
                                     break;
                             }
                         }
@@ -413,11 +411,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double gpuLoad = Math.Round((double)s.Value,2);
+                            float gpuLoad = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "GPU Core":
-                                    GpuLoad = gpuLoad.ToString();
+                                    GpuLoad = gpuLoad;
                                     break;
                             }
                         }
@@ -427,11 +425,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double gpuFan = Math.Round((double)s.Value,2);
+                            float gpuFan = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "GPU":
-                                    GpuFan = gpuFan.ToString();
+                                    GpuFan = gpuFan;
                                     break;
                             }
                         }
@@ -441,11 +439,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double gpuMemory = Math.Round((double)s.Value,2);
+                            float gpuMemory = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "GPU Memory":
-                                    GpuMemory = gpuMemory.ToString();
+                                    GpuMemory = gpuMemory;
                                     break;
                             }
                         }
@@ -457,11 +455,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double ramUsed = Math.Round((double)s.Value,2);
+                            float ramUsed = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "Memory Used":
-                                    RamUsed = ramUsed.ToString();
+                                    RamUsed = ramUsed;
                                     break;
                             }
                         }
@@ -470,11 +468,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double ramAvail = Math.Round((double)s.Value,2);
+                            float ramAvail = (float)Math.Round((double)s.Value, 2);
                             switch (s.Name)
                             {
                                 case "Memory Available":
-                                    RamAvail = ramAvail.ToString();
+                                    RamAvail = ramAvail;
                                     break;
                             }
                         }
@@ -484,11 +482,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double uploadSpeed = Math.Round((double)s.Value/2600,2);
+                            float uploadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
                             switch (s.Name)
                             {
                                 case "Upload Speed":
-                                    UploadSpeed = uploadSpeed.ToString();
+                                    UploadSpeed = uploadSpeed;
                                     break;
                             }
                         }
@@ -498,11 +496,11 @@ namespace SerialSender
                     {
                         if (s.Value != null)
                         {
-                            double downloadSpeed = Math.Round((double)s.Value/2600,2);
+                            float downloadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
                             switch (s.Name)
                             {
                                 case "Download Speed":
-                                    DownloadSpeed = downloadSpeed.ToString();
+                                    DownloadSpeed = downloadSpeed;
                                     break;
                             }
                         }

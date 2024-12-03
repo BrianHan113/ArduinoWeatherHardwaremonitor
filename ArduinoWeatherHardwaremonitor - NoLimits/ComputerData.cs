@@ -8,20 +8,20 @@ namespace SerialSender
 {
     public struct ComputerData
     {
-        public string DownloadSpeed;
-        public string UploadSpeed;
-        public string RamUsed;
-        public string RamAvail;
-        public string GpuLoad;
-        public string GpuFan;
-        public string GpuMemory;
-        public string GpuMemoryClock;
-        public string GpuClock;
-        public string GpuTemp;
-        public string CpuFan;
-        public string CpuPower;
-        public string[] CoreNoTemp;
-        public string[] CoreNoClock;
-        public string[] CoreNoLoad;
+        public float DownloadSpeed;
+        public float UploadSpeed;
+        public float RamUsed;
+        public float RamAvail;
+        public float GpuLoad;
+        public float GpuFan;
+        public float GpuMemory;
+        public float GpuMemoryClock;
+        public float GpuClock;
+        public float GpuTemp;
+        public float CpuFan;
+        public float CpuPower;
+        public float[] CoreNoTemp;
+        public float[] CoreNoClock;
+        public float[] CoreNoLoad;
     }
 }
