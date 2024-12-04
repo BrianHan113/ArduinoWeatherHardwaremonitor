@@ -71,7 +71,7 @@ namespace SerialSender
     class ContextMenus
     {
 
-        const int BAUD_RATE = 115200;
+        const int BAUD_RATE = 9600;
         SerialPort SelectedSerialPort;
         ContextMenuStrip menu;
         LibreHardwareMonitor.Hardware.Computer thisComputer;
@@ -531,7 +531,7 @@ namespace SerialSender
                 CoreNoLoad = coreNoLoadStr
             };
 
-            var json = JsonConvert.SerializeObject(computerData);
+            var json = JsonConvert.SerializeObject(computerData) + "\n";
 
             Console.WriteLine(json);
 
