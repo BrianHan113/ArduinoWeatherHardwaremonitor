@@ -71,7 +71,7 @@ namespace SerialSender
     class ContextMenus
     {
 
-
+        const int BAUD_RATE = 115200;
         SerialPort SelectedSerialPort;
         ContextMenuStrip menu;
         LibreHardwareMonitor.Hardware.Computer thisComputer;
@@ -154,7 +154,7 @@ namespace SerialSender
             Console.WriteLine("Selected port");
             Console.WriteLine(selected_port);
             Console.ReadLine();
-            SelectedSerialPort = new SerialPort(selected_port);
+            SelectedSerialPort = new SerialPort(selected_port, BAUD_RATE);
             if ( ! SelectedSerialPort.IsOpen)
             {
                 SelectedSerialPort.Open();
