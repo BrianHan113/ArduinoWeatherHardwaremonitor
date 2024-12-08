@@ -71,7 +71,7 @@ namespace SerialSender
     class ContextMenus
     {
 
-        const int BAUD_RATE = 9600;
+        const int BAUD_RATE = 115200;
         SerialPort SelectedSerialPort;
         ContextMenuStrip menu;
         LibreHardwareMonitor.Hardware.Computer thisComputer;
@@ -249,10 +249,10 @@ namespace SerialSender
             float GpuMemoryClock = -1.0f;
             float GpuTemp = -1.0f;
             float GpuClock = -1.0f;
-            float[] coreNoLoadStr = new float[10];
+            float[] coreNoLoad = new float[10];
             float CpuPower = -1.0f;
-            float[] coreNoTempStr = new float[10];
-            float[] coreNoClockStr = new float[10];
+            float[] coreNoTemp = new float[10];
+            float[] coreNoClock = new float[10];
             float RamUsed = -1.0f;
             float RamAvail = -1.0f;
             float UploadSpeed = -1.0f;
@@ -287,7 +287,7 @@ namespace SerialSender
                                 //string corenumber = coreid.ToString();
                                 //string coreNoTemp = "" + Convert.ToDouble(s.Value);
                                 
-                                coreNoTempStr[coreIndex] = (float)Convert.ToDouble(s.Value);
+                                coreNoTemp[coreIndex] = (float)Convert.ToDouble(s.Value);
 
                                 //Console.WriteLine(coreNoTempStr[coreid]);
 
@@ -336,7 +336,7 @@ namespace SerialSender
                                 //string corenumber = coreid.ToString();
                                 //string coreNoClock = "" + s.Value;
 
-                                coreNoClockStr[coreIndex] = (float)s.Value;
+                                coreNoClock[coreIndex] = (float)s.Value;
 
                                // Console.WriteLine(coreNoClockStr[coreid]);
 
@@ -357,7 +357,7 @@ namespace SerialSender
                                 //string corenumber = coreid.ToString();
                                 //string coreNoLoad = "" + Math.Round(Convert.ToDouble(s.Value),2);
 
-                                coreNoLoadStr[coreIndex] = (float)Math.Round(Convert.ToDouble(s.Value), 2);
+                                coreNoLoad[coreIndex] = (float)Math.Round(Convert.ToDouble(s.Value), 2);
 
                                // Console.WriteLine(coreNoLoadStr[coreid]);
 
@@ -526,9 +526,9 @@ namespace SerialSender
                 GpuTemp = GpuTemp,
                 CpuFan = CpuFan,
                 CpuPower = CpuPower,
-                CoreNoTemp = coreNoTempStr,
-                CoreNoClock = coreNoClockStr,
-                CoreNoLoad = coreNoLoadStr
+                CoreNoTemp = coreNoTemp,
+                CoreNoClock = coreNoClock,
+                CoreNoLoad = coreNoLoad
             };
 
             var json = JsonConvert.SerializeObject(computerData) + "\n";
