@@ -531,7 +531,7 @@ namespace SerialSender
                 CoreNoLoad = coreNoLoad
             };
 
-            var json = JsonConvert.SerializeObject(computerData) + "\n";
+            var json = JsonConvert.SerializeObject(computerData) + "\u0003";
 
             Console.WriteLine(json);
 
