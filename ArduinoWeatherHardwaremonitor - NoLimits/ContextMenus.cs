@@ -162,20 +162,37 @@ namespace SerialSender
             StateObjClass StateObj = new StateObjClass();
             StateObj.TimerCanceled = false;
             System.Threading.TimerCallback TimerDelegate = new System.Threading.TimerCallback(dataCheck);
-            //System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
+            System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
+            System.Threading.TimerCallback TimerDelegate3 = new System.Threading.TimerCallback(readSerial);
+
             System.Threading.Timer TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
-            //System.Threading.Timer TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather
+            System.Threading.Timer TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather
+            System.Threading.Timer TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 100, 100); //Serial transmitted from esp
+
             StateObj.TimerReference = TimerItem;
             
         }
 
 
-/////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////
+
+        public void readSerial(object StateObj)
+        {
+            SelectedSerialPort.DataReceived += (sender, e) =>
+            {
+                // Read the line from the serial port
+                string data = SelectedSerialPort.ReadLine();
+                Console.WriteLine("Received: " + data);
+            };
+        }
+        /////////////////////////////////////////////////////////
+
+
         public void weatherapp(object StateObj)
         {
 
+            Console.WriteLine("Weather App function entered");
 
-            
 
 
             string[] temps = new string[10];
@@ -534,6 +551,9 @@ namespace SerialSender
             var json = JsonConvert.SerializeObject(computerData) + "\u0003";
 
             Console.WriteLine(json);
+
+            
+
 
             SelectedSerialPort.WriteLine(json);
         }
