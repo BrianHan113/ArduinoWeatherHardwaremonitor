@@ -16,6 +16,7 @@ using System.Net;
 using System.Xml;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 /// 
 /// <summary>
@@ -75,6 +76,11 @@ namespace SerialSender
         SerialPort SelectedSerialPort;
         ContextMenuStrip menu;
         LibreHardwareMonitor.Hardware.Computer thisComputer;
+        static Mutex serialMutex = new Mutex();
+        private System.Threading.Timer TimerItem;
+        private System.Threading.Timer TimerItem2;
+        private System.Threading.Timer TimerItem3;
+
         public class StateObjClass
         {
             
@@ -165,9 +171,9 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
             System.Threading.TimerCallback TimerDelegate3 = new System.Threading.TimerCallback(readSerial);
 
-            System.Threading.Timer TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
-            System.Threading.Timer TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather
-            System.Threading.Timer TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 100, 100); //Serial transmitted from esp
+            TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
+            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather
+            TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 100, 100); //Serial transmitted from esp
 
             StateObj.TimerReference = TimerItem;
             
@@ -202,7 +208,6 @@ namespace SerialSender
             string[] wind = new string[10];
 
             try
-            {
             {
                 using (WebClient client = new WebClient())
                 {
@@ -241,11 +246,29 @@ namespace SerialSender
                                       "Forecast 15h: " + sky[6] + " " + temps[6] + "C " + wind[6] + "Km/h " + humidities[6] + "% " +
                                       "Forecast 18h: " + sky[7] + " " + temps[7] + "C " + wind[7] + "Km/h " + humidities[7] + "% " +
                                       "Forecast 21h: " + sky[8] + " " + temps[8] + "C " + wind[8] + "Km/h " + humidities[8] + "% " +
-                                      "Forecast 24h: " + sky[9] + " " + temps[9] + "C " + wind[9] + "Km/h " + humidities[9] + "% " + " END ";
-                   
-                    SelectedSerialPort.WriteLine(datastream2);
+                                      "Forecast 24h: " + sky[9] + " " + temps[9] + "C " + wind[9] + "Km/h " + humidities[9] + "% " + (char)0x03;
+
+                    serialMutex.WaitOne();
+
+                    try
+                    {
+                        // Perform the write operation to the serial port
+                        SelectedSerialPort.WriteLine(datastream2);
+                        Console.WriteLine("Weather data sent");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error writing to serial port: " + ex.Message);
+                    }
+                    finally
+                    {
+                        // Release the mutex to allow other threads to access the serial port
+                        Thread.Sleep(1000);
+                        serialMutex.ReleaseMutex();
+                    }
+
+                        
                 }
-            }
             }
             catch (Exception)
             {
@@ -548,14 +571,32 @@ namespace SerialSender
                 CoreNoLoad = coreNoLoad
             };
 
-            var json = JsonConvert.SerializeObject(computerData) + "\u0003";
+            var json = JsonConvert.SerializeObject(computerData) + (char)0x03;
 
             Console.WriteLine(json);
 
+            serialMutex.WaitOne();
+
+            try
+            {
+                // Perform the write operation to the serial port
+                SelectedSerialPort.WriteLine(json);
+                Console.WriteLine("Hardware data sent");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error writing to serial port: " + ex.Message);
+            }
+            finally
+            {
+                // Release the mutex to allow other threads to access the serial port
+                Thread.Sleep(1000);
+                serialMutex.ReleaseMutex();
+            }
+
+
+
             
-
-
-            SelectedSerialPort.WriteLine(json);
         }
 
         void Exit_Click(object sender, EventArgs e)
