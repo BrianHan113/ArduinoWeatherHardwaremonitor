@@ -202,7 +202,7 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate3 = new System.Threading.TimerCallback(readSerial);
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
-            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 30000); //weather
+            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 100, 100); //Serial transmitted from esp
 
             StateObj.TimerReference = TimerItem;
@@ -231,11 +231,11 @@ namespace SerialSender
 
 
 
-            string[] temps = new string[10];
-            string[] humidities = new string[10];
-            string[] clouds = new string[10];
+            float[] temps = new float[10];
+            int[] humidities = new int[10];
+            //string[] clouds = new string[10];
             string[] sky = new string[20];
-            string[] wind = new string[10];
+            float[] wind = new float[10];
 
             try
             {
@@ -251,28 +251,98 @@ namespace SerialSender
                     foreach (var json in myweather.list.Take(9))
                     {
                         i++;
-                        temps[i] = json.main.temp.ToString();
-                        humidities[i] = json.main.humidity.ToString();
+                        temps[i] = json.main.temp;
+                        humidities[i] = (int)json.main.humidity;
                         //clouds[i] = json.clouds.all.ToString();
-                        double windspeed = Math.Round(json.wind.speed * 3.6, 2);
-                        wind[i] = windspeed.ToString();
-                        sky[i] = json.weather.First().description.ToString();
+                        float windspeed = (float)Math.Round(json.wind.speed * 3.6, 2);
+                        wind[i] = windspeed;
+                        sky[i] = json.weather.First().description;
                     }
 
                     
-                    String datastream2 = "Current weather: " + sky[1] + " " + temps[1] + "°C " + wind[1] + "Km/h " + humidities[1] + "% " +
-                                      "Forecast 3h: " + sky[2] + " " + temps[2] + "C " + wind[2] + "Km/h " + humidities[2] + "% " +
-                                      "Forecast 6h: " + sky[3] + " " + temps[3] + "C " + wind[3] + "Km/h " + humidities[3] + "% " +
-                                      "Forecast 9h: " + sky[4] + " " + temps[4] + "C " + wind[4] + "Km/h " + humidities[4] + "% " +
-                                      "Forecast 12h: " + sky[5] + " " + temps[5] + "C " + wind[5] + "Km/h " + humidities[5] + "% " +
-                                      "Forecast 15h: " + sky[6] + " " + temps[6] + "C " + wind[6] + "Km/h " + humidities[6] + "% " +
-                                      "Forecast 18h: " + sky[7] + " " + temps[7] + "C " + wind[7] + "Km/h " + humidities[7] + "% " +
-                                      "Forecast 21h: " + sky[8] + " " + temps[8] + "C " + wind[8] + "Km/h " + humidities[8] + "% " +
-                                      "Forecast 24h: " + sky[9] + " " + temps[9] + "C " + wind[9] + "Km/h " + humidities[9] + "% " + (char)0x03;
+                    //String datastream2 = "Current weather: " + sky[1] + " " + temps[1] + "°C " + wind[1] + "Km/h " + humidities[1] + "% " +
+                    //                  "Forecast 3h: " + sky[2] + " " + temps[2] + "C " + wind[2] + "Km/h " + humidities[2] + "% " +
+                    //                  "Forecast 6h: " + sky[3] + " " + temps[3] + "C " + wind[3] + "Km/h " + humidities[3] + "% " +
+                    //                  "Forecast 9h: " + sky[4] + " " + temps[4] + "C " + wind[4] + "Km/h " + humidities[4] + "% " +
+                    //                  "Forecast 12h: " + sky[5] + " " + temps[5] + "C " + wind[5] + "Km/h " + humidities[5] + "% " +
+                    //                  "Forecast 15h: " + sky[6] + " " + temps[6] + "C " + wind[6] + "Km/h " + humidities[6] + "% " +
+                    //                  "Forecast 18h: " + sky[7] + " " + temps[7] + "C " + wind[7] + "Km/h " + humidities[7] + "% " +
+                    //                  "Forecast 21h: " + sky[8] + " " + temps[8] + "C " + wind[8] + "Km/h " + humidities[8] + "% " +
+                    //                  "Forecast 24h: " + sky[9] + " " + temps[9] + "C " + wind[9] + "Km/h " + humidities[9] + "% " + (char)0x03;
 
-                    Console.WriteLine(datastream2);
-                    //SelectedSerialPort.Write(datastream2);
-                    EnqueueData(datastream2);
+                    ForeCast currentForecast = new ForeCast {
+                        description = sky[1],
+                        temperature = temps[1],
+                        windSpeed = wind[1],
+                        humidity = humidities[1],
+                    };
+                    ForeCast threeHourForecast = new ForeCast {
+                        description = sky[2],
+                        temperature = temps[2],
+                        windSpeed = wind[2],
+                        humidity = humidities[2],
+                    };
+                    ForeCast sixHourForecast = new ForeCast {
+                        description = sky[3],
+                        temperature = temps[3],
+                        windSpeed = wind[3],
+                        humidity = humidities[3],
+                    };
+                    ForeCast nineHourForecast = new ForeCast {
+                        description = sky[4],
+                        temperature = temps[4],
+                        windSpeed = wind[4],
+                        humidity = humidities[4],
+                    };
+                    ForeCast twelveHourForecast = new ForeCast {
+                        description = sky[5],
+                        temperature = temps[5],
+                        windSpeed = wind[5],
+                        humidity = humidities[5],
+                    };
+                    ForeCast fifteenHourForecast = new ForeCast {
+                        description = sky[6],
+                        temperature = temps[6],
+                        windSpeed = wind[6],
+                        humidity = humidities[6],
+                    };
+                    ForeCast eighteenHourForecast = new ForeCast {
+                        description = sky[7],
+                        temperature = temps[7],
+                        windSpeed = wind[7],
+                        humidity = humidities[7],
+                    };
+                    ForeCast twentyOneHourForecast = new ForeCast {
+                        description = sky[8],
+                        temperature = temps[8],
+                        windSpeed = wind[8],
+                        humidity = humidities[8],
+                    };
+                    ForeCast twentyFourHourForecast = new ForeCast {
+                        description = sky[9],
+                        temperature = temps[9],
+                        windSpeed = wind[9],
+                        humidity = humidities[9],
+                    };
+
+                    WeatherData weatherData = new WeatherData
+                    {
+                        currentForecast = currentForecast,
+                        threeHourForecast = threeHourForecast,
+                        sixHourForecast = sixHourForecast,
+                        nineHourForecast = nineHourForecast,
+                        twelveHourForecast = twelveHourForecast,
+                        fifteenHourForecast = fifteenHourForecast,
+                        eighteenHourForecast = eighteenHourForecast,
+                        twentyOneHourForecast = twentyOneHourForecast,
+                        twentyFourHourForecast = twentyFourHourForecast,
+                    };
+
+                    var weatherJson = "WEATHER" + JsonConvert.SerializeObject(currentForecast) + (char)0x03;
+
+                    Console.WriteLine(weatherJson);
+                    //SelectedSerialPort.Write(json);
+                    EnqueueData(weatherJson);
                     Console.WriteLine("Weather data sent");
                 }
             }
