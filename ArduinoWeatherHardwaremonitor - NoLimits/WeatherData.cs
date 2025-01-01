@@ -8,22 +8,17 @@ namespace SerialSender
 {
     public struct WeatherData
     {
-        public ForeCast currentForecast;
-        public ForeCast threeHourForecast;
-        public ForeCast sixHourForecast;
-        public ForeCast nineHourForecast;
-        public ForeCast twelveHourForecast;
-        public ForeCast fifteenHourForecast;
-        public ForeCast eighteenHourForecast;
-        public ForeCast twentyOneHourForecast;
-        public ForeCast twentyFourHourForecast;
+        public String timeSpan;
+        public ForeCast forecast1;
+        public ForeCast forecast2;
+        public ForeCast forecast3;
     }
 
     public struct ForeCast
     {
-        public String description;
-        public float temperature;
-        public float windSpeed;
-        public int humidity;
+        public String desc;
+        public float temp;
+        public float wind;
+        public int humid;
     }
 }

@@ -84,6 +84,9 @@ namespace SerialSender
         private readonly ConcurrentQueue<string> sendQueue = new ConcurrentQueue<string>();
         private bool isSending = false;
         private readonly object serialLock = new object();
+        private readonly object sendingLock = new object();
+        private readonly int maxQueueSize = 10;
+
 
 
 
@@ -162,26 +165,40 @@ namespace SerialSender
 
         void EnqueueData(string data)
         {
+            if (sendQueue.Count >= maxQueueSize)
+            {
+                Console.WriteLine("Queue is full. Discarding item.");
+                return;
+            }
+
             sendQueue.Enqueue(data);
+            Thread.Sleep(2000);
             StartSending();
         }
 
         void StartSending()
         {
-            if (isSending) return;
-            isSending = true;
-
-            Task.Run(() =>
+            lock (sendingLock)
             {
-                while (sendQueue.TryDequeue(out string data))
+                if (isSending) return;
+                isSending = true;
+                
+                if (sendQueue.TryDequeue(out string data))
                 {
+                    while (SelectedSerialPort.BytesToWrite > 0)
+                    {
+                        Thread.Sleep(10);
+                    }
                     lock (serialLock)
                     {
+                        Console.WriteLine("Sending");
                         SelectedSerialPort.Write(data);
                     }
                 }
+                Console.WriteLine("Done sending");
                 isSending = false;
-            });
+                
+            }
         }
 
 
@@ -271,78 +288,95 @@ namespace SerialSender
                     //                  "Forecast 24h: " + sky[9] + " " + temps[9] + "C " + wind[9] + "Km/h " + humidities[9] + "% " + (char)0x03;
 
                     ForeCast currentForecast = new ForeCast {
-                        description = sky[1],
-                        temperature = temps[1],
-                        windSpeed = wind[1],
-                        humidity = humidities[1],
+                        desc = sky[1],
+                        temp = temps[1],
+                        wind = wind[1],
+                        humid = humidities[1],
                     };
                     ForeCast threeHourForecast = new ForeCast {
-                        description = sky[2],
-                        temperature = temps[2],
-                        windSpeed = wind[2],
-                        humidity = humidities[2],
+                        desc = sky[2],
+                        temp = temps[2],
+                        wind = wind[2],
+                        humid = humidities[2],
                     };
                     ForeCast sixHourForecast = new ForeCast {
-                        description = sky[3],
-                        temperature = temps[3],
-                        windSpeed = wind[3],
-                        humidity = humidities[3],
+                        desc = sky[3],
+                        temp = temps[3],
+                        wind = wind[3],
+                        humid = humidities[3],
                     };
                     ForeCast nineHourForecast = new ForeCast {
-                        description = sky[4],
-                        temperature = temps[4],
-                        windSpeed = wind[4],
-                        humidity = humidities[4],
+                        desc = sky[4],
+                        temp = temps[4],
+                        wind = wind[4],
+                        humid = humidities[4],
                     };
                     ForeCast twelveHourForecast = new ForeCast {
-                        description = sky[5],
-                        temperature = temps[5],
-                        windSpeed = wind[5],
-                        humidity = humidities[5],
+                        desc = sky[5],
+                        temp = temps[5],
+                        wind = wind[5],
+                        humid = humidities[5],
                     };
                     ForeCast fifteenHourForecast = new ForeCast {
-                        description = sky[6],
-                        temperature = temps[6],
-                        windSpeed = wind[6],
-                        humidity = humidities[6],
+                        desc = sky[6],
+                        temp = temps[6],
+                        wind = wind[6],
+                        humid = humidities[6],
                     };
                     ForeCast eighteenHourForecast = new ForeCast {
-                        description = sky[7],
-                        temperature = temps[7],
-                        windSpeed = wind[7],
-                        humidity = humidities[7],
+                        desc = sky[7],
+                        temp = temps[7],
+                        wind = wind[7],
+                        humid = humidities[7],
                     };
                     ForeCast twentyOneHourForecast = new ForeCast {
-                        description = sky[8],
-                        temperature = temps[8],
-                        windSpeed = wind[8],
-                        humidity = humidities[8],
+                        desc = sky[8],
+                        temp = temps[8],
+                        wind = wind[8],
+                        humid = humidities[8],
                     };
                     ForeCast twentyFourHourForecast = new ForeCast {
-                        description = sky[9],
-                        temperature = temps[9],
-                        windSpeed = wind[9],
-                        humidity = humidities[9],
+                        desc = sky[9],
+                        temp = temps[9],
+                        wind = wind[9],
+                        humid = humidities[9],
                     };
 
-                    WeatherData weatherData = new WeatherData
+                    WeatherData weatherDataPacket1 = new WeatherData
                     {
-                        currentForecast = currentForecast,
-                        threeHourForecast = threeHourForecast,
-                        sixHourForecast = sixHourForecast,
-                        nineHourForecast = nineHourForecast,
-                        twelveHourForecast = twelveHourForecast,
-                        fifteenHourForecast = fifteenHourForecast,
-                        eighteenHourForecast = eighteenHourForecast,
-                        twentyOneHourForecast = twentyOneHourForecast,
-                        twentyFourHourForecast = twentyFourHourForecast,
+                        timeSpan = "CurrentToSix",
+                        forecast1 = currentForecast,
+                        forecast2 = threeHourForecast,
+                        forecast3 = sixHourForecast,
                     };
 
-                    var weatherJson = "WEATHER" + JsonConvert.SerializeObject(currentForecast) + (char)0x03;
+                    WeatherData weatherDataPacket2 = new WeatherData
+                    {
+                        timeSpan = "NineToFifteen",
+                        forecast1 = nineHourForecast,
+                        forecast2 = twelveHourForecast,
+                        forecast3 = fifteenHourForecast,
+                    };
 
-                    Console.WriteLine(weatherJson);
+                    WeatherData weatherDataPacket3 = new WeatherData
+                    {
+                        timeSpan = "EighteenToTwentyFour",
+                        forecast1 = eighteenHourForecast,
+                        forecast2 = twentyOneHourForecast,
+                        forecast3 = twentyFourHourForecast,
+                    };
+
+                    var weatherJsonPacket1 = "WEATHER1" + JsonConvert.SerializeObject(weatherDataPacket1) + (char)0x03;
+                    var weatherJsonPacket2 = "WEATHER2" + JsonConvert.SerializeObject(weatherDataPacket2) + (char)0x03;
+                    var weatherJsonPacket3 = "WEATHER3" + JsonConvert.SerializeObject(weatherDataPacket3) + (char)0x03;
+
+                    Console.WriteLine(weatherJsonPacket1);
+                    Console.WriteLine(weatherJsonPacket2);
+                    Console.WriteLine(weatherJsonPacket3);
                     //SelectedSerialPort.Write(json);
-                    EnqueueData(weatherJson);
+                    EnqueueData(weatherJsonPacket1);
+                    EnqueueData(weatherJsonPacket2);
+                    EnqueueData(weatherJsonPacket3);
                     Console.WriteLine("Weather data sent");
                 }
             }
@@ -652,6 +686,7 @@ namespace SerialSender
             Console.WriteLine(json);
             //SelectedSerialPort.Write(json);
             EnqueueData(json);
+            
             Console.WriteLine("Hardware data sent");
             
         }
