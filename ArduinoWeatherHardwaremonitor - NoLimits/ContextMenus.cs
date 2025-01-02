@@ -189,7 +189,6 @@ namespace SerialSender
                     SelectedSerialPort.Write(data);
                 }
             }
-            Console.WriteLine("Done sending");
         }
 
 
@@ -212,8 +211,8 @@ namespace SerialSender
 
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
-            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 30000); //weather - free api calls abosulte min is 86.4 secs per call
-            //TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 100, 100); //Serial transmitted from esp
+            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
+            TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
 
             StateObj.TimerReference = TimerItem;
@@ -229,7 +228,19 @@ namespace SerialSender
             {
                 // Read the line from the serial port
                 string data = SelectedSerialPort.ReadLine();
+                data = data.TrimEnd('\r');
                 Console.WriteLine("Received: " + data);
+
+                //foreach (char c in data)
+                //{
+                //    Console.WriteLine($"Char: {c} ASCII: {(int)c}");
+                //}
+
+                if (data == "REFRESHWEATHER")
+                {
+                    Console.WriteLine("Refreshing Weather info");
+                    weatherapp(null);
+                }
             };
         }
         /////////////////////////////////////////////////////////
