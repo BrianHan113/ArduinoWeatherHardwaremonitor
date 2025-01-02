@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Collections.Concurrent;
 
+
 /// 
 /// <summary>
 /// New code based on serialsender from github, 25.12.2019 - Merry Christmas!
@@ -240,9 +241,35 @@ namespace SerialSender
                 {
                     Console.WriteLine("Refreshing Weather info");
                     weatherapp(null);
+                } else if (data == "LOCKPC")
+                {
+                    Console.WriteLine("Lock PC");
+                    ExecutePowerShellCommand("rundll32.exe user32.dll, LockWorkStation");
                 }
             };
         }
+        /////////////////////////////////////////////////////////
+
+        public static void ExecutePowerShellCommand(string command)
+        {
+            // Start PowerShell process
+            ProcessStartInfo pro = new ProcessStartInfo();
+            pro.FileName = "powershell";
+            pro.Arguments = command;
+            pro.RedirectStandardOutput = true;
+            pro.UseShellExecute = false;
+            pro.CreateNoWindow = true;
+
+            using (Process process = Process.Start(pro))
+            {
+                using (System.IO.StreamReader reader = process.StandardOutput)
+                {
+                    string result = reader.ReadToEnd();  // Capture output
+                    Console.WriteLine(result);
+                }
+            }
+        }
+
         /////////////////////////////////////////////////////////
 
 
