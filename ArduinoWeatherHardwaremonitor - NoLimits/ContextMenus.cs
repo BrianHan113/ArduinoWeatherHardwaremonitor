@@ -89,9 +89,6 @@ namespace SerialSender
         private readonly object sendingLock = new object();
         private readonly int maxQueueSize = 10;
 
-
-
-
         public class StateObjClass
         {
             public System.Threading.Timer TimerReference;
@@ -109,7 +106,6 @@ namespace SerialSender
             thisComputer.IsNetworkEnabled = true;
            //   thisComputer.IsStorageEnabled = true; //stupid bug here
             thisComputer.Open();
-            
 
             menu = new ContextMenuStrip();
             CreateMenuItems();
@@ -721,6 +717,9 @@ namespace SerialSender
 
         void Exit_Click(object sender, EventArgs e)
         {
+            Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.TOGGLE_VISIBILITY, IntPtr.Zero);
+            Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.CLOSE_WINAMP, IntPtr.Zero);
+
             Application.Exit();
         }
     }
