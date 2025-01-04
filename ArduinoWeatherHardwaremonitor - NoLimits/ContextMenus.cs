@@ -264,6 +264,9 @@ namespace SerialSender
                         Console.WriteLine("Refresh music player nextion");
                     }
                     
+                } else if (data == "PAUSEMUSIC")
+                {
+                    Process.Start("D:\\winamp_install\\Winamp\\winamp.exe", "/pause");
                 }
             };
         }
