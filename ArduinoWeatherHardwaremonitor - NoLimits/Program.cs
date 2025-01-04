@@ -20,25 +20,41 @@ namespace SerialSender
         public const uint CLOSE_WINAMP = 40001;
         public const uint INCREASE_VOLUME = 40058;
         public const uint DECREASE_VOLUME = 40059;
-        public static IntPtr hwnd;
+        public static IntPtr hwnd = IntPtr.Zero;
+
+        
+        
 
         [STAThread]
         static void Main()
         {
             Process.Start("D:\\winamp_install\\Winamp\\winamp.exe");
+            int attempts = 0;
+            int maxAttempts = 20;
 
-
-            System.Threading.Thread.Sleep(5000);
-            hwnd = FindWindow("Winamp v1.x", null);
-            
-            if (hwnd != IntPtr.Zero)
+            while (attempts < maxAttempts)
             {
-                Console.WriteLine("Winamp running.");
-                SendMessage(hwnd, WM_COMMAND, (IntPtr)TOGGLE_VISIBILITY, IntPtr.Zero);
-            } else
-            {
-                Console.WriteLine("Winamp not installed, or directory is incorrect");
+                hwnd = FindWindow("Winamp v1.x", null);
+                if (hwnd != IntPtr.Zero)
+                {
+                    Console.WriteLine("Winamp running.");
+                    break;
+                } else
+                {
+                    attempts++;
+                    System.Threading.Thread.Sleep(500);
+                }
             }
+
+            if (attempts == maxAttempts)
+            {
+                Console.WriteLine("Could not open WinAmp, check directory or install");
+                return;
+            }
+
+            System.Threading.Thread.Sleep(1000); // Need to let window fully load to sucessfully hide it
+            SendMessage(hwnd, WM_COMMAND, (IntPtr)TOGGLE_VISIBILITY, IntPtr.Zero);
+
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
