@@ -85,11 +85,13 @@ namespace SerialSender
         private System.Threading.Timer TimerItem3;
         private System.Threading.Timer TimerItem4;
 
-        private readonly ConcurrentQueue<string> sendQueue = new ConcurrentQueue<string>();
+        private static readonly ConcurrentQueue<string> sendQueue = new ConcurrentQueue<string>();
         private bool isSending = false;
         private readonly object serialLock = new object();
         private readonly object sendingLock = new object();
-        private readonly int maxQueueSize = 10;
+        private static readonly int maxQueueSize = 10;
+
+        private static List<string> songs = new List<string>();
 
         public class StateObjClass
         {
@@ -163,7 +165,7 @@ namespace SerialSender
             CreateMenuItems();
         }
 
-        void EnqueueData(string data)
+        static void EnqueueData(string data)
         {
             if (sendQueue.Count >= maxQueueSize)
             {
@@ -209,7 +211,7 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate4 = new System.Threading.TimerCallback(sendData);
 
 
-            TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 2500, 2500); //hardware
+            TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
             TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
@@ -242,41 +244,38 @@ namespace SerialSender
                 } else if (data == "LOCKPC")
                 {
                     Console.WriteLine("Lock PC");
-                    ExecutePowerShellCommand("rundll32.exe user32.dll, LockWorkStation");
-                } else if (data == "REFRESHMUSIC") 
+                    Process.Start("rundll32.exe", "user32.dll,LockWorkStation");
+                }
+                else if (data == "REFRESHMUSIC") 
                 {
                     SendSongString("D:\\2024-25-Summer-Internship\\risos-internship\\music");
+                } else if (data.StartsWith("PLAYMUSIC"))
+                {
+                    String num = data.Substring(9, data.Length - 9);
+                    int index = int.Parse(num);
+                    String songDir;
+                    try
+                    {
+                        songDir = songs[index];
+                        Process.Start("D:\\winamp_install\\Winamp\\winamp.exe", "\"" + songDir + "\"");
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Refresh music player nextion");
+                    }
+                    
                 }
             };
         }
-        /////////////////////////////////////////////////////////
-
-        public static void ExecutePowerShellCommand(string command)
-        {
-            // Start PowerShell process
-            ProcessStartInfo pro = new ProcessStartInfo();
-            pro.FileName = "powershell";
-            pro.Arguments = command;
-            pro.RedirectStandardOutput = true;
-            pro.UseShellExecute = false;
-            pro.CreateNoWindow = true;
-
-            using (Process process = Process.Start(pro))
-            {
-                using (System.IO.StreamReader reader = process.StandardOutput)
-                {
-                    string result = reader.ReadToEnd();  // Capture output
-                    Console.WriteLine(result);
-                }
-            }
-        }
 
         /////////////////////////////////////////////////////////
 
-        public void SendSongString(string directoryPath)
+        public static void SendSongString(string directoryPath)
         {
+            songs.Clear();
             var files = Directory.GetFiles(directoryPath, "*.m4a");
             var songOptions = string.Join("BREAK", files.Select(f => Path.GetFileName(f)));
+            songs.AddRange(files);
 
             Console.WriteLine(songOptions);
             EnqueueData("MUSICSTRING" + songOptions + (char)0x03);
