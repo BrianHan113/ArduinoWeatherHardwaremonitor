@@ -18,6 +18,8 @@ namespace SerialSender
         public const uint WM_COMMAND = 0x0111; // Command mode
         public const uint TOGGLE_VISIBILITY = 40258;
         public const uint CLOSE_WINAMP = 40001;
+        public const uint INCREASE_VOLUME = 40058;
+        public const uint DECREASE_VOLUME = 40059;
         public static IntPtr hwnd;
 
         [STAThread]

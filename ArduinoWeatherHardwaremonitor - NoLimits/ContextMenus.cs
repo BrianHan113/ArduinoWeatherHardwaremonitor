@@ -268,6 +268,15 @@ namespace SerialSender
                 {
                     Process.Start("D:\\winamp_install\\Winamp\\winamp.exe", "/pause");
                 }
+                else if (data == "INCREASEMUSIC")
+                {
+                    Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.INCREASE_VOLUME, IntPtr.Zero);
+
+                }
+                else if (data == "DECREASEMUSIC")
+                {
+                    Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.DECREASE_VOLUME, IntPtr.Zero);
+                }
             };
         }
 
