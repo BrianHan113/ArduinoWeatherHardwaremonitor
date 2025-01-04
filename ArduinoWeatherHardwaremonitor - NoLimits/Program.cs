@@ -26,7 +26,7 @@ namespace SerialSender
             Process.Start("D:\\winamp_install\\Winamp\\winamp.exe");
 
 
-            System.Threading.Thread.Sleep(2000);
+            System.Threading.Thread.Sleep(5000);
             hwnd = FindWindow("Winamp v1.x", null);
             
             if (hwnd != IntPtr.Zero)

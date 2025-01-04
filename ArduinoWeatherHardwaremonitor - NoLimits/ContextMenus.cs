@@ -18,6 +18,8 @@ using Newtonsoft.Json;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.IO;
+
 
 
 /// 
@@ -241,6 +243,9 @@ namespace SerialSender
                 {
                     Console.WriteLine("Lock PC");
                     ExecutePowerShellCommand("rundll32.exe user32.dll, LockWorkStation");
+                } else if (data == "REFRESHMUSIC") 
+                {
+                    SendSongString("D:\\2024-25-Summer-Internship\\risos-internship\\music");
                 }
             };
         }
@@ -268,6 +273,15 @@ namespace SerialSender
 
         /////////////////////////////////////////////////////////
 
+        public void SendSongString(string directoryPath)
+        {
+            var files = Directory.GetFiles(directoryPath, "*.m4a");
+            var songOptions = string.Join("BREAK", files.Select(f => Path.GetFileName(f)));
+
+            Console.WriteLine(songOptions);
+            EnqueueData("MUSICSTRING" + songOptions + (char)0x03);
+        }
+        /////////////////////////////////////////////////////////
 
         public void weatherapp(object StateObj)
         {
