@@ -42,31 +42,33 @@ static class Scheduler
         Console.WriteLine(scheduledEnd);
 
         TimeSpan delayToStart = scheduledStart - now;
-        TimeSpan onDuration = scheduledEnd - scheduledStart;
+        TimeSpan delayToEnd = scheduledEnd - now;
         
         Timer timer = new Timer(_ =>
         {
             Console.WriteLine($"'{SW}' ON at {DateTime.Now:HH:mm:ss}"); 
             ContextMenus.EnqueueData("SCHEDULE" + SW + "ON" + 0x03);
-            
-            // Schedule the end timer
-            Timer endTimer = new Timer(__ =>
-            {
-                Console.WriteLine($"'{SW}' OFF at {DateTime.Now:HH:mm:ss}");
-                ContextMenus.EnqueueData("SCHEDULE" + SW + "OFF" + 0x03);
-
-            }, null, onDuration, Timeout.InfiniteTimeSpan);
 
         }, null, delayToStart, Timeout.InfiniteTimeSpan);
+
+        Timer endTimer = new Timer(__ =>
+        {
+            Console.WriteLine($"'{SW}' OFF at {DateTime.Now:HH:mm:ss}");
+            ContextMenus.EnqueueData("SCHEDULE" + SW + "OFF" + 0x03);
+
+            ScheduleSwitch(SW, start, end);
+
+        }, null, delayToEnd, Timeout.InfiniteTimeSpan);
 
 
         if (timers.ContainsKey(SW))
         {
             CancelTask(SW);
+            CancelTask(SW + "END");
         }
 
         // Store the timer
-        if (timers.TryAdd(SW, timer))
+        if (timers.TryAdd(SW, timer) && timers.TryAdd(SW + "END", endTimer))
         {
             Console.WriteLine($"Task '{SW}' scheduled to start at {scheduledStart:HH:mm:ss} and end at {scheduledEnd:HH:mm:ss}");
         }
