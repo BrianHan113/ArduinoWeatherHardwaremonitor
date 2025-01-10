@@ -284,17 +284,18 @@ namespace SerialSender
                         Scheduler.CancelTask(data.Substring(13)+"END");
                     } else
                     {
-                        Console.WriteLine("Schedule commands");
+                        //Console.WriteLine("Schedule commands");
                         String start = data.Substring(8, 4);
                         String end = data.Substring(12, 4);
                         String SW = data.Substring(16);
 
                         //Scheduler.ScheduleSwitch(SW, start, end);
-                        Scheduler.ScheduleSwitch("SW1", "2235", "2236");
-                        Scheduler.ScheduleSwitch("SW2", "2235", "2236");
+                        Scheduler.ScheduleSwitch("TEMPSENSOR", "0049", "0050");
+                        //Scheduler.ScheduleSwitch("SW1", "2259", "2300");
+                        //Scheduler.ScheduleSwitch("SW2", "2259", "2300");
 
 
-                        Console.WriteLine(start + " " + end + " " + SW);
+                        //Console.WriteLine(start + " " + end + " " + SW);
                     }
                 }
             };

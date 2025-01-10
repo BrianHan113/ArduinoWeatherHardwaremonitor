@@ -46,15 +46,36 @@ static class Scheduler
         
         Timer timer = new Timer(_ =>
         {
-            Console.WriteLine($"'{SW}' ON at {DateTime.Now:HH:mm:ss}"); 
-            ContextMenus.EnqueueData("SCHEDULE" + SW + "ON" + (char)0x03);
+            String action;
+            if (SW == "TEMPSENSOR" || SW == "MOTIONSENSOR")
+            {
+                action = "ENABLE";
+            }
+            else
+            {
+                action = "ON";
+            }
+            Console.WriteLine($"'{SW}' {action} at {DateTime.Now:HH:mm:ss}");
+            
+
+            ContextMenus.EnqueueData("SCHEDULE" + SW + action + (char)0x03);
 
         }, null, delayToStart, Timeout.InfiniteTimeSpan);
 
         Timer endTimer = new Timer(__ =>
         {
-            Console.WriteLine($"'{SW}' OFF at {DateTime.Now:HH:mm:ss}");
-            ContextMenus.EnqueueData("SCHEDULE" + SW + "OFF" + (char)0x03);
+            String action;
+            if (SW == "TEMPSENSOR" || SW == "MOTIONSENSOR")
+            {
+                action = "DISABLE";
+            }
+            else
+            {
+                action = "OFF";
+            }
+            Console.WriteLine($"'{SW}' {action} at {DateTime.Now:HH:mm:ss}");
+            
+            ContextMenus.EnqueueData("SCHEDULE" + SW + action + (char)0x03);
 
             ScheduleSwitch(SW, start, end);
 
