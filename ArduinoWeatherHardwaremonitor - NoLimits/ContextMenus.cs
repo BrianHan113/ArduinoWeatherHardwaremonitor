@@ -211,8 +211,8 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate4 = new System.Threading.TimerCallback(sendData);
 
 
-            TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
-            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
+            //TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
+            //TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
 
@@ -276,6 +276,16 @@ namespace SerialSender
                 else if (data == "DECREASEMUSIC")
                 {
                     Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.DECREASE_VOLUME, IntPtr.Zero);
+                } else if (data.StartsWith("SCHEDULE"))
+                {
+                    Console.WriteLine("Schedule commands");
+                    String start = data.Substring(8, 4);
+                    String end = data.Substring(12, 4);
+                    String SW = data.Substring(16);
+
+                    Scheduler.ScheduleSwitch(SW, start, end);
+
+                    Console.WriteLine(start + " " + end + " " + SW);
                 }
             };
         }
