@@ -281,6 +281,7 @@ namespace SerialSender
                     if (data.Substring(8).StartsWith("CLEAR"))
                     {
                         Scheduler.CancelTask(data.Substring(13));
+                        Scheduler.CancelTask(data.Substring(13)+"END");
                     } else
                     {
                         Console.WriteLine("Schedule commands");
@@ -289,8 +290,8 @@ namespace SerialSender
                         String SW = data.Substring(16);
 
                         //Scheduler.ScheduleSwitch(SW, start, end);
-                        Scheduler.ScheduleSwitch("SW1", "2211", "2212");
-                        Scheduler.ScheduleSwitch("SW2", "2211", "2212");
+                        Scheduler.ScheduleSwitch("SW1", "2214", "2215");
+                        Scheduler.ScheduleSwitch("SW2", "2214", "2215");
 
 
                         Console.WriteLine(start + " " + end + " " + SW);
