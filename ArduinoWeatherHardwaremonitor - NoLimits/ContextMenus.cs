@@ -73,7 +73,7 @@ namespace SerialSender
 
     /////////////////////////////////////////////////////////////////////
 
-    class ContextMenus
+    public class ContextMenus
     {
 
         const int BAUD_RATE = 115200;
@@ -165,7 +165,7 @@ namespace SerialSender
             CreateMenuItems();
         }
 
-        static void EnqueueData(string data)
+        public static void EnqueueData(string data)
         {
             if (sendQueue.Count >= maxQueueSize)
             {
@@ -283,7 +283,9 @@ namespace SerialSender
                     String end = data.Substring(12, 4);
                     String SW = data.Substring(16);
 
-                    Scheduler.ScheduleSwitch(SW, start, end);
+                    //Scheduler.ScheduleSwitch(SW, start, end);
+                    Scheduler.ScheduleSwitch(SW, "1726", "1727");
+
 
                     Console.WriteLine(start + " " + end + " " + SW);
                 }
