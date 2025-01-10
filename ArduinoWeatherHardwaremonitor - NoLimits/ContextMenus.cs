@@ -278,16 +278,22 @@ namespace SerialSender
                     Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.DECREASE_VOLUME, IntPtr.Zero);
                 } else if (data.StartsWith("SCHEDULE"))
                 {
-                    Console.WriteLine("Schedule commands");
-                    String start = data.Substring(8, 4);
-                    String end = data.Substring(12, 4);
-                    String SW = data.Substring(16);
+                    if (data.Substring(8).StartsWith("CLEAR"))
+                    {
+                        Scheduler.CancelTask(data.Substring(13));
+                    } else
+                    {
+                        Console.WriteLine("Schedule commands");
+                        String start = data.Substring(8, 4);
+                        String end = data.Substring(12, 4);
+                        String SW = data.Substring(16);
 
-                    //Scheduler.ScheduleSwitch(SW, start, end);
-                    Scheduler.ScheduleSwitch(SW, "1726", "1727");
+                        //Scheduler.ScheduleSwitch(SW, start, end);
+                        Scheduler.ScheduleSwitch(SW, "1726", "1727");
 
 
-                    Console.WriteLine(start + " " + end + " " + SW);
+                        Console.WriteLine(start + " " + end + " " + SW);
+                    }
                 }
             };
         }
