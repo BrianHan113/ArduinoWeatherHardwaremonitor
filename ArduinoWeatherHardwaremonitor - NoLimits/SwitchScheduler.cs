@@ -47,14 +47,14 @@ static class Scheduler
         Timer timer = new Timer(_ =>
         {
             Console.WriteLine($"'{SW}' ON at {DateTime.Now:HH:mm:ss}"); 
-            ContextMenus.EnqueueData("SCHEDULE" + SW + "ON" + 0x03);
+            ContextMenus.EnqueueData("SCHEDULE" + SW + "ON" + (char)0x03);
 
         }, null, delayToStart, Timeout.InfiniteTimeSpan);
 
         Timer endTimer = new Timer(__ =>
         {
             Console.WriteLine($"'{SW}' OFF at {DateTime.Now:HH:mm:ss}");
-            ContextMenus.EnqueueData("SCHEDULE" + SW + "OFF" + 0x03);
+            ContextMenus.EnqueueData("SCHEDULE" + SW + "OFF" + (char)0x03);
 
             ScheduleSwitch(SW, start, end);
 

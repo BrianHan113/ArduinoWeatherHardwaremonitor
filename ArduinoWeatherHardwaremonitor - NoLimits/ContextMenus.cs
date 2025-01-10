@@ -290,8 +290,8 @@ namespace SerialSender
                         String SW = data.Substring(16);
 
                         //Scheduler.ScheduleSwitch(SW, start, end);
-                        Scheduler.ScheduleSwitch("SW1", "2214", "2215");
-                        Scheduler.ScheduleSwitch("SW2", "2214", "2215");
+                        Scheduler.ScheduleSwitch("SW1", "2235", "2236");
+                        Scheduler.ScheduleSwitch("SW2", "2235", "2236");
 
 
                         Console.WriteLine(start + " " + end + " " + SW);
