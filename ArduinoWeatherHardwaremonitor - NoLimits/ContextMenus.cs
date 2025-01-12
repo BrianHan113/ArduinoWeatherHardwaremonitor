@@ -289,8 +289,8 @@ namespace SerialSender
                         String end = data.Substring(12, 4);
                         String SW = data.Substring(16);
 
-                        //Scheduler.ScheduleSwitch(SW, start, end);
-                        Scheduler.ScheduleSwitch("TEMPSENSOR", "0049", "0050");
+                        Scheduler.ScheduleSwitch(SW, start, end);
+                        //Scheduler.ScheduleSwitch("MOTIONSENSOR", "0124", "0125");
                         //Scheduler.ScheduleSwitch("SW1", "2259", "2300");
                         //Scheduler.ScheduleSwitch("SW2", "2259", "2300");
 
