@@ -152,6 +152,14 @@ namespace SerialSender
             menu.Items.Add(sep);
 
             item = new ToolStripMenuItem();
+            item.Text = "WinAmp Dir";
+            item.Click += (sender, e) => WinAmp.SelectInstallDir();
+            menu.Items.Add(item);
+
+            sep = new ToolStripSeparator();
+            menu.Items.Add(sep);
+
+            item = new ToolStripMenuItem();
             item.Text = "Exit";
             item.Click += new System.EventHandler(Exit_Click);
             item.Image = Resources.Exit;
@@ -270,12 +278,12 @@ namespace SerialSender
                 }
                 else if (data == "INCREASEMUSIC")
                 {
-                    Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.INCREASE_VOLUME, IntPtr.Zero);
+                    WinAmp.SendMessage(WinAmp.hwnd, WinAmp.WM_COMMAND, (IntPtr)WinAmp.INCREASE_VOLUME, IntPtr.Zero);
 
                 }
                 else if (data == "DECREASEMUSIC")
                 {
-                    Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.DECREASE_VOLUME, IntPtr.Zero);
+                    WinAmp.SendMessage(WinAmp.hwnd, WinAmp.WM_COMMAND, (IntPtr)WinAmp.DECREASE_VOLUME, IntPtr.Zero);
                 } else if (data.StartsWith("SCHEDULE"))
                 {
                     if (data.Substring(8).StartsWith("CLEAR"))
@@ -770,8 +778,8 @@ namespace SerialSender
 
         void Exit_Click(object sender, EventArgs e)
         {
-            Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.TOGGLE_VISIBILITY, IntPtr.Zero);
-            Program.SendMessage(Program.hwnd, Program.WM_COMMAND, (IntPtr)Program.CLOSE_WINAMP, IntPtr.Zero);
+            WinAmp.SendMessage(WinAmp.hwnd, WinAmp.WM_COMMAND, (IntPtr)WinAmp.TOGGLE_VISIBILITY, IntPtr.Zero);
+            WinAmp.SendMessage(WinAmp.hwnd, WinAmp.WM_COMMAND, (IntPtr)WinAmp.CLOSE_WINAMP, IntPtr.Zero);
 
             Application.Exit();
         }
