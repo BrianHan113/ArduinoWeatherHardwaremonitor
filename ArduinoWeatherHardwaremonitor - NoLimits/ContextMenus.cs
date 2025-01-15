@@ -280,8 +280,13 @@ namespace SerialSender
                 {
                     if (data.Substring(8).StartsWith("CLEAR"))
                     {
-                        Scheduler.CancelTask(data.Substring(13));
-                        Scheduler.CancelTask(data.Substring(13)+"END");
+                        String clearString = data.Substring(13);
+                        String start = clearString.Substring(0, 4);
+                        String end = clearString.Substring(4, 4);
+                        String SW = clearString.Substring(8);
+                        Console.WriteLine("Clearing: " + SW + start + end);
+                        Scheduler.CancelTask(SW + start + end);
+                        Scheduler.CancelTask(SW + start + end + "END");
                     } else
                     {
                         //Console.WriteLine("Schedule commands");
@@ -290,6 +295,8 @@ namespace SerialSender
                         String SW = data.Substring(16);
 
                         Scheduler.ScheduleSwitch(SW, start, end);
+                        //Scheduler.ScheduleSwitch(SW, "1618", "1619");
+
                         //Scheduler.ScheduleSwitch("MOTIONSENSOR", "0124", "0125");
                         //Scheduler.ScheduleSwitch("SW1", "2259", "2300");
                         //Scheduler.ScheduleSwitch("SW2", "2259", "2300");

@@ -82,29 +82,25 @@ static class Scheduler
         }, null, delayToEnd, Timeout.InfiniteTimeSpan);
 
 
-        if (timers.ContainsKey(SW))
-        {
-            CancelTask(SW);
-            CancelTask(SW + "END");
-        }
+        String timerId = SW + start + end;
 
         // Store the timer
-        if (timers.TryAdd(SW, timer) && timers.TryAdd(SW + "END", endTimer))
+        if (timers.TryAdd(timerId, timer) && timers.TryAdd(timerId + "END", endTimer))
         {
-            Console.WriteLine($"Task '{SW}' scheduled to start at {scheduledStart:HH:mm:ss} and end at {scheduledEnd:HH:mm:ss}");
+            Console.WriteLine($"Timer ID: '{timerId}' scheduled to start at {scheduledStart:HH:mm:ss} and end at {scheduledEnd:HH:mm:ss}");
         }
     }
 
-    public static void CancelTask(string SW)
+    public static void CancelTask(string timerId)
     {
-        if (timers.TryRemove(SW, out Timer timer))
+        if (timers.TryRemove(timerId, out Timer timer))
         {
             timer.Dispose();
-            Console.WriteLine($"'{SW}' canceled.");
+            Console.WriteLine($"'{timerId}' canceled.");
         }
         else
         {
-            Console.WriteLine($"No timer found with ID '{SW}'.");
+            Console.WriteLine($"No timer found with ID '{timerId}'.");
         }
     }
 }

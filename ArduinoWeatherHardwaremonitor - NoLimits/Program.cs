@@ -79,7 +79,7 @@ namespace SerialSender
                 selectInstallDir();
             }
 
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(3000);
             hwnd = FindWindow("Winamp v1.x", null);
             SendMessage(hwnd, WM_COMMAND, (IntPtr)TOGGLE_VISIBILITY, IntPtr.Zero);
 
