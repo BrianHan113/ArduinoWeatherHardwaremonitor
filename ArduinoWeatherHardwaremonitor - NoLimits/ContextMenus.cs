@@ -219,7 +219,7 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate4 = new System.Threading.TimerCallback(sendData);
 
 
-            //TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
+            TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
             //TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
@@ -487,15 +487,16 @@ namespace SerialSender
             float GpuMemoryClock = -1.0f;
             float GpuTemp = -1.0f;
             float GpuClock = -1.0f;
-            float[] coreNoLoad = new float[10];
+            float[] coreNoLoad = new float[20];
             float CpuPower = -1.0f;
-            float[] coreNoTemp = new float[10];
-            float[] coreNoClock = new float[10];
+            float[] coreNoTemp = new float[20];
+            float[] coreNoClock = new float[20];
             float RamUsed = -1.0f;
             float RamAvail = -1.0f;
             float UploadSpeed = -1.0f;
             float DownloadSpeed = -1.0f;
             float CpuFan = -1.0f;
+            int numCores = 0;
 
             //;
             StateObjClass State = (StateObjClass)StateObj;
@@ -521,7 +522,7 @@ namespace SerialSender
 
                                 int coreid = int.Parse(s.Name.Split('#')[1]);
                                 int coreIndex = coreid - 1;
-
+                                numCores++;
                                 //string corenumber = coreid.ToString();
                                 //string coreNoTemp = "" + Convert.ToDouble(s.Value);
                                 
@@ -533,75 +534,75 @@ namespace SerialSender
                         }
                     }
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Fan)
-                    {
-                        if (s.Value != null)
-                        {
-                            float cpuFan = (float)Math.Round((double)s.Value, 2);
-                            switch (s.Name)
-                            {
-                                case "GPU":
-                                    CpuFan = cpuFan;
-                                    break;
-                            }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Fan)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float cpuFan = (float)Math.Round((double)s.Value, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "GPU":
+                    //                CpuFan = cpuFan;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Power)
-                    {
-                        if (s.Value != null)
-                        {
-                             float cpuPower = (float)Math.Round((double)s.Value,2);
-                             switch (s.Name)
-                             {
-                                 case "CPU Package":
-                                    CpuPower = cpuPower;
-                                     break;
-                             }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Power)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //         float cpuPower = (float)Math.Round((double)s.Value,2);
+                    //         switch (s.Name)
+                    //         {
+                    //             case "CPU Package":
+                    //                CpuPower = cpuPower;
+                    //                 break;
+                    //         }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
-                    {
-                        if (s.Value != null)
-                        {
-                            if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
-                            {
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
+                    //        {
 
-                                int coreid = int.Parse(s.Name.Split('#')[1]);
-                                int coreIndex = coreid - 1;
+                    //            int coreid = int.Parse(s.Name.Split('#')[1]);
+                    //            int coreIndex = coreid - 1;
 
-                                //string corenumber = coreid.ToString();
-                                //string coreNoClock = "" + s.Value;
+                    //            //string corenumber = coreid.ToString();
+                    //            //string coreNoClock = "" + s.Value;
 
-                                coreNoClock[coreIndex] = (float)s.Value;
+                    //            coreNoClock[coreIndex] = (float)s.Value;
 
-                               // Console.WriteLine(coreNoClockStr[coreid]);
+                    //           // Console.WriteLine(coreNoClockStr[coreid]);
 
-                            }
-                        }
-                    }
+                    //        }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
-                    {
-                        if (s.Value != null)
-                        {
-                            if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
-                            {
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
+                    //        {
 
-                                int coreid = int.Parse(s.Name.Split('#')[1]);
-                                int coreIndex = coreid - 1;
+                    //            int coreid = int.Parse(s.Name.Split('#')[1]);
+                    //            int coreIndex = coreid - 1;
 
-                                //string corenumber = coreid.ToString();
-                                //string coreNoLoad = "" + Math.Round(Convert.ToDouble(s.Value),2);
+                    //            //string corenumber = coreid.ToString();
+                    //            //string coreNoLoad = "" + Math.Round(Convert.ToDouble(s.Value),2);
 
-                                coreNoLoad[coreIndex] = (float)Math.Round(Convert.ToDouble(s.Value), 2);
+                    //            coreNoLoad[coreIndex] = (float)Math.Round(Convert.ToDouble(s.Value), 2);
 
-                               // Console.WriteLine(coreNoLoadStr[coreid]);
+                    //           // Console.WriteLine(coreNoLoadStr[coreid]);
 
-                            }
-                        }
-                    }
+                    //        }
+                    //    }
+                    //}
 // GPU
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
                     {
@@ -617,75 +618,76 @@ namespace SerialSender
                         }
                     }
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
-                    {
-                        if (s.Value != null)
-                        {
-                            float gpuClock = (float)Math.Round((double)s.Value,2);
-                            switch (s.Name)
-                            {
-                                case "GPU Core":
-                                    GpuClock = gpuClock;
-                                    break;
-                            }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float gpuClock = (float)Math.Round((double)s.Value,2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "GPU Core":
+                    //                GpuClock = gpuClock;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
-                    {
-                        if (s.Value != null)
-                        {
-                            float gpumemoryClock = (float)Math.Round((double)s.Value, 2);
-                            switch (s.Name)
-                            {
-                                case "GPU Memory":
-                                    GpuMemoryClock = gpumemoryClock;
-                                    break;
-                            }
-                        }
-                    }
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
-                    {
-                        if (s.Value != null)
-                        {
-                            float gpuLoad = (float)Math.Round((double)s.Value, 2);
-                            switch (s.Name)
-                            {
-                                case "GPU Core":
-                                    GpuLoad = gpuLoad;
-                                    break;
-                            }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float gpumemoryClock = (float)Math.Round((double)s.Value, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "GPU Memory":
+                    //                GpuMemoryClock = gpumemoryClock;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Fan)
-                    {
-                        if (s.Value != null)
-                        {
-                            float gpuFan = (float)Math.Round((double)s.Value, 2);
-                            switch (s.Name)
-                            {
-                                case "GPU":
-                                    GpuFan = gpuFan;
-                                    break;
-                            }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float gpuLoad = (float)Math.Round((double)s.Value, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "GPU Core":
+                    //                GpuLoad = gpuLoad;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
-                    {
-                        if (s.Value != null)
-                        {
-                            float gpuMemory = (float)Math.Round((double)s.Value, 2);
-                            switch (s.Name)
-                            {
-                                case "GPU Memory":
-                                    GpuMemory = gpuMemory;
-                                    break;
-                            }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Fan)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float gpuFan = (float)Math.Round((double)s.Value, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "GPU":
+                    //                GpuFan = gpuFan;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
+
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float gpuMemory = (float)Math.Round((double)s.Value, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "GPU Memory":
+                    //                GpuMemory = gpuMemory;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
 
 
 // RAM
@@ -715,58 +717,59 @@ namespace SerialSender
                             }
                         }
                     }
-// Network
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Throughput)
-                    {
-                        if (s.Value != null)
-                        {
-                            float uploadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
-                            switch (s.Name)
-                            {
-                                case "Upload Speed":
-                                    UploadSpeed = uploadSpeed;
-                                    break;
-                            }
-                        }
-                    }
+                    // Network
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Throughput)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float uploadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "Upload Speed":
+                    //                UploadSpeed = uploadSpeed;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Throughput)
-                    {
-                        if (s.Value != null)
-                        {
-                            float downloadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
-                            switch (s.Name)
-                            {
-                                case "Download Speed":
-                                    DownloadSpeed = downloadSpeed;
-                                    break;
-                            }
-                        }
-                    }
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Throughput)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        float downloadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "Download Speed":
+                    //                DownloadSpeed = downloadSpeed;
+                    //                break;
+                    //        }
+                    //    }
+                    //}
                 }
             }
 
 
-           //String datastream = "Computer Data: " + DownloadSpeed + UploadSpeed + RamUsed + RamAvail + GpuLoad + GpuFan + GpuMemory + GpuMemoryClock + GpuClock + GpuTemp + CpuFan + CpuPower +  coreNoTempStr[1] + coreNoTempStr[2] + coreNoTempStr[3] + coreNoTempStr[4] + coreNoClockStr[1] + coreNoClockStr[2] + coreNoClockStr[3] + coreNoClockStr[4] + coreNoLoadStr[1] + coreNoLoadStr[2] + coreNoLoadStr[3] + coreNoLoadStr[4] + " END ";
+            //String datastream = "Computer Data: " + DownloadSpeed + UploadSpeed + RamUsed + RamAvail + GpuLoad + GpuFan + GpuMemory + GpuMemoryClock + GpuClock + GpuTemp + CpuFan + CpuPower +  coreNoTempStr[1] + coreNoTempStr[2] + coreNoTempStr[3] + coreNoTempStr[4] + coreNoClockStr[1] + coreNoClockStr[2] + coreNoClockStr[3] + coreNoClockStr[4] + coreNoLoadStr[1] + coreNoLoadStr[2] + coreNoLoadStr[3] + coreNoLoadStr[4] + " END ";
 
 
             ComputerData computerData = new ComputerData
             {
-                DownloadSpeed = DownloadSpeed,
-                UploadSpeed = UploadSpeed,
+                //DownloadSpeed = DownloadSpeed,
+                //UploadSpeed = UploadSpeed,
                 RamUsed = RamUsed,
                 RamAvail = RamAvail,
-                GpuLoad = GpuLoad,
-                GpuFan = GpuFan,
-                GpuMemory = GpuMemory,
-                GpuMemoryClock = GpuMemoryClock,
-                GpuClock = GpuClock,
+                //GpuLoad = GpuLoad,
+                //GpuFan = GpuFan,
+                //GpuMemory = GpuMemory,
+                //GpuMemoryClock = GpuMemoryClock,
+                //GpuClock = GpuClock,
                 GpuTemp = GpuTemp,
-                CpuFan = CpuFan,
-                CpuPower = CpuPower,
+                //CpuFan = CpuFan,
+                //CpuPower = CpuPower,
                 CoreNoTemp = coreNoTemp,
-                CoreNoClock = coreNoClock,
-                CoreNoLoad = coreNoLoad
+                //CoreNoClock = coreNoClock,
+                //CoreNoLoad = coreNoLoad
+                NumCores = numCores
             };
 
             var json = "HARDWARE" + JsonConvert.SerializeObject(computerData) + (char)0x03;
