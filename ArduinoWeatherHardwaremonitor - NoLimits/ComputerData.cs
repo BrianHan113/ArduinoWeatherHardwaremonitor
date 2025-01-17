@@ -20,9 +20,12 @@ namespace SerialSender
         public float GpuTemp;
         //public float CpuFan;
         //public float CpuPower;
-        public float[] CoreNoTemp;
+        //public float[] CoreNoTemp;
         //public float[] CoreNoClock;
         //public float[] CoreNoLoad;
-        public int NumCores;
+        //public int NumCores;
+        public int CpuPackageTemp;
+        public float CpuPackagePower;
+        public float GpuPower;
     }
 }

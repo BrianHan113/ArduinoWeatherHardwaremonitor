@@ -497,6 +497,9 @@ namespace SerialSender
             float DownloadSpeed = -1.0f;
             float CpuFan = -1.0f;
             int numCores = 0;
+            int cpuPackageTemp = 0;
+            float gpuPower = -1.0f;
+            float cpuPackagePower = -1.0f;
 
             //;
             StateObjClass State = (StateObjClass)StateObj;
@@ -512,23 +515,55 @@ namespace SerialSender
                 {
                     //Console.WriteLine("NAME: " + s.Name + ", TYPE: " + s.SensorType + ", VALUE: " + s.Value);
                     Console.ReadLine();
-// CPU  
+                    // CPU  
+                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
+                    //{
+                    //    if (s.Value != null)
+                    //    {
+                    //        if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
+                    //        {
+
+                    //            int coreid = int.Parse(s.Name.Split('#')[1]);
+                    //            int coreIndex = coreid - 1;
+                    //            numCores++;
+                    //            //string corenumber = coreid.ToString();
+                    //            //string coreNoTemp = "" + Convert.ToDouble(s.Value);
+
+                    //            coreNoTemp[coreIndex] = (float)Convert.ToDouble(s.Value);
+
+                    //            //Console.WriteLine(coreNoTempStr[coreid]);
+
+                    //        }
+                    //    }
+                    //}
+
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
                     {
                         if (s.Value != null)
                         {
-                            if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
+                            if (s.Name.StartsWith("CPU Package"))
                             {
 
-                                int coreid = int.Parse(s.Name.Split('#')[1]);
-                                int coreIndex = coreid - 1;
-                                numCores++;
                                 //string corenumber = coreid.ToString();
                                 //string coreNoTemp = "" + Convert.ToDouble(s.Value);
-                                
-                                coreNoTemp[coreIndex] = (float)Convert.ToDouble(s.Value);
 
-                                //Console.WriteLine(coreNoTempStr[coreid]);
+                                cpuPackageTemp = (int)Convert.ToDouble(s.Value);
+
+                            }
+                        }
+                    }
+
+                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Power)
+                    {
+                        if (s.Value != null)
+                        {
+                            if (s.Name.StartsWith("CPU Package"))
+                            {
+
+                                //string corenumber = coreid.ToString();
+                                //string coreNoTemp = "" + Convert.ToDouble(s.Value);
+
+                                cpuPackagePower = (float)Convert.ToDouble(s.Value);
 
                             }
                         }
@@ -552,15 +587,16 @@ namespace SerialSender
                     //{
                     //    if (s.Value != null)
                     //    {
-                    //         float cpuPower = (float)Math.Round((double)s.Value,2);
-                    //         switch (s.Name)
-                    //         {
-                    //             case "CPU Package":
+                    //        float cpuPower = (float)Math.Round((double)s.Value, 2);
+                    //        switch (s.Name)
+                    //        {
+                    //            case "CPU Package":
                     //                CpuPower = cpuPower;
-                    //                 break;
-                    //         }
+                    //                break;
+                    //        }
                     //    }
                     //}
+
 
                     //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
                     //{
@@ -603,7 +639,7 @@ namespace SerialSender
                     //        }
                     //    }
                     //}
-// GPU
+                    // GPU
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
                     {
                         if (s.Value != null)
@@ -614,6 +650,22 @@ namespace SerialSender
                                 case "GPU Core":
                                     GpuTemp = gpuTemp;
                                     break;
+                            }
+                        }
+                    }
+
+                    if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Power)
+                    {
+                        if (s.Value != null)
+                        {
+                            if (s.Name.StartsWith("GPU Power"))
+                            {
+
+                                //string corenumber = coreid.ToString();
+                                //string coreNoTemp = "" + Convert.ToDouble(s.Value);
+
+                                gpuPower = (float)Convert.ToDouble(s.Value);
+
                             }
                         }
                     }
@@ -690,7 +742,7 @@ namespace SerialSender
                     //}
 
 
-// RAM
+                    // RAM
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Data)
                     {
                         if (s.Value != null)
@@ -766,17 +818,20 @@ namespace SerialSender
                 GpuTemp = GpuTemp,
                 //CpuFan = CpuFan,
                 //CpuPower = CpuPower,
-                CoreNoTemp = coreNoTemp,
+                //CoreNoTemp = coreNoTemp,
                 //CoreNoClock = coreNoClock,
                 //CoreNoLoad = coreNoLoad
-                NumCores = numCores
+                //NumCores = numCores
+                CpuPackageTemp = cpuPackageTemp,
+                CpuPackagePower = cpuPackagePower,
+                GpuPower = gpuPower
             };
 
             var json = "HARDWARE" + JsonConvert.SerializeObject(computerData) + (char)0x03;
 
             Console.WriteLine(json);
             //SelectedSerialPort.Write(json);
-            EnqueueData(json);            
+            EnqueueData(json);
         }
 
         void Exit_Click(object sender, EventArgs e)
