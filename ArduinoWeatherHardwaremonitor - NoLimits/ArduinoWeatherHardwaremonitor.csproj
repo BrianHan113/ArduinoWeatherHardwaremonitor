@@ -119,6 +119,7 @@
     <Compile Include="ProcessIcon.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Secret.cs" />
     <Compile Include="SwitchScheduler.cs" />
     <Compile Include="WeatherData.cs" />
     <Compile Include="WinAmp.cs" />

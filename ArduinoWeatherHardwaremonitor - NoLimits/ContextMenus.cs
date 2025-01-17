@@ -93,6 +93,10 @@ namespace SerialSender
 
         private static List<string> songs = new List<string>();
 
+        // Set default lat long to a location
+        private static double latitude = -36.747;
+        private static double longitude = 174.739;
+
         public class StateObjClass
         {
             public System.Threading.Timer TimerReference;
@@ -220,7 +224,7 @@ namespace SerialSender
 
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
-            //TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
+            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
 
@@ -284,7 +288,8 @@ namespace SerialSender
                 else if (data == "DECREASEMUSIC")
                 {
                     WinAmp.SendMessage(WinAmp.hwnd, WinAmp.WM_COMMAND, (IntPtr)WinAmp.DECREASE_VOLUME, IntPtr.Zero);
-                } else if (data.StartsWith("SCHEDULE"))
+                } 
+                else if (data.StartsWith("SCHEDULE"))
                 {
                     if (data.Substring(8).StartsWith("CLEAR"))
                     {
@@ -312,6 +317,18 @@ namespace SerialSender
 
                         //Console.WriteLine(start + " " + end + " " + SW);
                     }
+                }
+                else if (data.StartsWith("LOCATION")) 
+                {
+                    String location = data.Substring(8);
+                    int latStart = location.IndexOf("LAT") + 3;
+                    int latEnd = location.IndexOf("LONG");
+                    latitude = double.Parse(location.Substring(latStart, latEnd - latStart));
+
+                    int longStart = latEnd + 4;
+                    longitude = double.Parse(location.Substring(longStart));
+
+                    Console.WriteLine($"Latitude: {latitude}, Longitude: {longitude}");
                 }
             };
         }
@@ -349,7 +366,9 @@ namespace SerialSender
                 {
                     Console.WriteLine("ACCESSING jsonWeather ...");
                     client.Proxy = null;
-                    string jsonWeather = client.DownloadString("http://api.openweathermap.org/data/2.5/forecast?q=Auckland,NZ&APPID=45c3e583468bf450fc17026d6734507e&units=metric");
+
+                    //string jsonWeather = client.DownloadString("http://api.openweathermap.org/data/2.5/forecast?q=Auckland,NZ&APPID=45c3e583468bf450fc17026d6734507e&units=metric");
+                    string jsonWeather = client.DownloadString($"https://api.openweathermap.org/data/2.5/forecast?lat={latitude.ToString()}&lon={longitude.ToString()}&appid={Secret.OpenWeatherAPI}&units=metric");
 
                     var myweather = JsonConvert.DeserializeObject<RootObject>(jsonWeather);
 
@@ -800,28 +819,11 @@ namespace SerialSender
                 }
             }
 
-
-            //String datastream = "Computer Data: " + DownloadSpeed + UploadSpeed + RamUsed + RamAvail + GpuLoad + GpuFan + GpuMemory + GpuMemoryClock + GpuClock + GpuTemp + CpuFan + CpuPower +  coreNoTempStr[1] + coreNoTempStr[2] + coreNoTempStr[3] + coreNoTempStr[4] + coreNoClockStr[1] + coreNoClockStr[2] + coreNoClockStr[3] + coreNoClockStr[4] + coreNoLoadStr[1] + coreNoLoadStr[2] + coreNoLoadStr[3] + coreNoLoadStr[4] + " END ";
-
-
             ComputerData computerData = new ComputerData
             {
-                //DownloadSpeed = DownloadSpeed,
-                //UploadSpeed = UploadSpeed,
                 RamUsed = RamUsed,
                 RamAvail = RamAvail,
-                //GpuLoad = GpuLoad,
-                //GpuFan = GpuFan,
-                //GpuMemory = GpuMemory,
-                //GpuMemoryClock = GpuMemoryClock,
-                //GpuClock = GpuClock,
                 GpuTemp = GpuTemp,
-                //CpuFan = CpuFan,
-                //CpuPower = CpuPower,
-                //CoreNoTemp = coreNoTemp,
-                //CoreNoClock = coreNoClock,
-                //CoreNoLoad = coreNoLoad
-                //NumCores = numCores
                 CpuPackageTemp = cpuPackageTemp,
                 CpuPackagePower = cpuPackagePower,
                 GpuPower = gpuPower
@@ -830,7 +832,6 @@ namespace SerialSender
             var json = "HARDWARE" + JsonConvert.SerializeObject(computerData) + (char)0x03;
 
             Console.WriteLine(json);
-            //SelectedSerialPort.Write(json);
             EnqueueData(json);
         }
 
