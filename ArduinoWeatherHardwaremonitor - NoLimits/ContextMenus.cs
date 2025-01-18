@@ -47,27 +47,21 @@ namespace SerialSender
     public class myWeather
     {
         public Main main { get; set; }
-        public Clouds clouds { get; set; }
-        public List<Weather> weather { get; set; }
         public Wind wind { get; set; }
-        public string dt_txt { get; set; }
+        public List<Weather> weather { get; set; }
     }
     public class Main
     {
         public float temp { get; set; }
-        public float humidity { get; set; }
-    }
-    public class Clouds
-    {
-        public float all { get; set; }
     }
     public class Weather
     {
-        public string description { get; set; }
+        public string icon { get; set; }
     }
     public class Wind
     {
         public float speed { get; set; }
+        public int deg { get; set; }
     }
 
 
@@ -347,6 +341,46 @@ namespace SerialSender
         }
         /////////////////////////////////////////////////////////
 
+        public String windDegToDirection(int deg)
+        {
+            // Deg from openweatherapi is meteorological, 0 is north, 90 is east, etc
+            if (deg >= 0 && deg <= 22 || deg > 337 && deg <= 360)
+            {
+                return "Northerly";
+            }
+            else if (deg > 22 && deg <= 67)
+            {
+                return "North-Easterly";
+            }
+            else if (deg > 67 && deg <= 112)
+            {
+                return "Easterly";
+            }
+            else if (deg > 112 && deg <= 157)
+            {
+                return "South-Easterly";
+            }
+            else if (deg > 157 && deg <= 202)
+            {
+                return "Southerly";
+            }
+            else if (deg > 202 && deg <= 247)
+            {
+                return "South-Westerly";
+            }
+            else if (deg > 247 && deg <= 292)
+            {
+                return "Westerly";
+            }
+            else if (deg > 292 && deg <= 337)
+            {
+                return "North-Westerly";
+            } else
+            {
+                return "Error, out of bounds";
+            }
+        }
+
         public void weatherapp(object StateObj)
         {
 
@@ -367,124 +401,44 @@ namespace SerialSender
                     Console.WriteLine("ACCESSING jsonWeather ...");
                     client.Proxy = null;
 
-                    //string jsonWeather = client.DownloadString("http://api.openweathermap.org/data/2.5/forecast?q=Auckland,NZ&APPID=45c3e583468bf450fc17026d6734507e&units=metric");
                     string jsonWeather = client.DownloadString($"https://api.openweathermap.org/data/2.5/forecast?lat={latitude.ToString()}&lon={longitude.ToString()}&appid={Secret.OpenWeatherAPI}&units=metric");
+
+                    Console.WriteLine(jsonWeather);
 
                     var myweather = JsonConvert.DeserializeObject<RootObject>(jsonWeather);
 
-                    int i = 0;
-                    foreach (var json in myweather.list.Take(9))
+                    var currentWeather = myweather.list.ElementAt(0);
+                    var nextDayWeather = myweather.list.ElementAt(0);
+
+                    float currentWindKnots = (float)Math.Round(currentWeather.wind.speed * 1.9438452);
+                    float nextDayWindKnots = (float)Math.Round(nextDayWeather.wind.speed * 1.9438452);
+
+                    ForeCast today = new ForeCast
                     {
-                        i++;
-                        temps[i] = json.main.temp;
-                        humidities[i] = (int)json.main.humidity;
-                        //clouds[i] = json.clouds.all.ToString();
-                        float windspeed = (float)Math.Round(json.wind.speed * 3.6, 2);
-                        wind[i] = windspeed;
-                        sky[i] = json.weather.First().description;
-                    }
+                        weatherIcon = currentWeather.weather.ElementAt(0).icon,
+                        temp = currentWeather.main.temp,
+                        windKnots = currentWindKnots,
+                        windDirection = windDegToDirection(currentWeather.wind.deg),
 
-                    
-                    //String datastream2 = "Current weather: " + sky[1] + " " + temps[1] + "°C " + wind[1] + "Km/h " + humidities[1] + "% " +
-                    //                  "Forecast 3h: " + sky[2] + " " + temps[2] + "C " + wind[2] + "Km/h " + humidities[2] + "% " +
-                    //                  "Forecast 6h: " + sky[3] + " " + temps[3] + "C " + wind[3] + "Km/h " + humidities[3] + "% " +
-                    //                  "Forecast 9h: " + sky[4] + " " + temps[4] + "C " + wind[4] + "Km/h " + humidities[4] + "% " +
-                    //                  "Forecast 12h: " + sky[5] + " " + temps[5] + "C " + wind[5] + "Km/h " + humidities[5] + "% " +
-                    //                  "Forecast 15h: " + sky[6] + " " + temps[6] + "C " + wind[6] + "Km/h " + humidities[6] + "% " +
-                    //                  "Forecast 18h: " + sky[7] + " " + temps[7] + "C " + wind[7] + "Km/h " + humidities[7] + "% " +
-                    //                  "Forecast 21h: " + sky[8] + " " + temps[8] + "C " + wind[8] + "Km/h " + humidities[8] + "% " +
-                    //                  "Forecast 24h: " + sky[9] + " " + temps[9] + "C " + wind[9] + "Km/h " + humidities[9] + "% " + (char)0x03;
-
-                    ForeCast currentForecast = new ForeCast {
-                        desc = sky[1],
-                        temp = temps[1],
-                        wind = wind[1],
-                        humid = humidities[1],
-                    };
-                    ForeCast threeHourForecast = new ForeCast {
-                        desc = sky[2],
-                        temp = temps[2],
-                        wind = wind[2],
-                        humid = humidities[2],
-                    };
-                    ForeCast sixHourForecast = new ForeCast {
-                        desc = sky[3],
-                        temp = temps[3],
-                        wind = wind[3],
-                        humid = humidities[3],
-                    };
-                    ForeCast nineHourForecast = new ForeCast {
-                        desc = sky[4],
-                        temp = temps[4],
-                        wind = wind[4],
-                        humid = humidities[4],
-                    };
-                    ForeCast twelveHourForecast = new ForeCast {
-                        desc = sky[5],
-                        temp = temps[5],
-                        wind = wind[5],
-                        humid = humidities[5],
-                    };
-                    ForeCast fifteenHourForecast = new ForeCast {
-                        desc = sky[6],
-                        temp = temps[6],
-                        wind = wind[6],
-                        humid = humidities[6],
-                    };
-                    ForeCast eighteenHourForecast = new ForeCast {
-                        desc = sky[7],
-                        temp = temps[7],
-                        wind = wind[7],
-                        humid = humidities[7],
-                    };
-                    ForeCast twentyOneHourForecast = new ForeCast {
-                        desc = sky[8],
-                        temp = temps[8],
-                        wind = wind[8],
-                        humid = humidities[8],
-                    };
-                    ForeCast twentyFourHourForecast = new ForeCast {
-                        desc = sky[9],
-                        temp = temps[9],
-                        wind = wind[9],
-                        humid = humidities[9],
                     };
 
-                    WeatherData weatherDataPacket1 = new WeatherData
+                    ForeCast tomorrow = new ForeCast
                     {
-                        timeSpan = "CurrentToSix",
-                        forecast1 = currentForecast,
-                        forecast2 = threeHourForecast,
-                        forecast3 = sixHourForecast,
+                        weatherIcon = nextDayWeather.weather.ElementAt(0).icon,
+                        temp = nextDayWeather.main.temp,
+                        windKnots = nextDayWindKnots,
+                        windDirection = windDegToDirection(nextDayWeather.wind.deg),
                     };
 
-                    WeatherData weatherDataPacket2 = new WeatherData
+                    WeatherData weatherData = new WeatherData
                     {
-                        timeSpan = "NineToFifteen",
-                        forecast1 = nineHourForecast,
-                        forecast2 = twelveHourForecast,
-                        forecast3 = fifteenHourForecast,
+                        today = today,
+                        tomorrow = tomorrow,
                     };
 
-                    WeatherData weatherDataPacket3 = new WeatherData
-                    {
-                        timeSpan = "EighteenToTwentyFour",
-                        forecast1 = eighteenHourForecast,
-                        forecast2 = twentyOneHourForecast,
-                        forecast3 = twentyFourHourForecast,
-                    };
-
-                    var weatherJsonPacket1 = "WEATHER1" + JsonConvert.SerializeObject(weatherDataPacket1) + (char)0x03;
-                    var weatherJsonPacket2 = "WEATHER2" + JsonConvert.SerializeObject(weatherDataPacket2) + (char)0x03;
-                    var weatherJsonPacket3 = "WEATHER3" + JsonConvert.SerializeObject(weatherDataPacket3) + (char)0x03;
-
-                    Console.WriteLine(weatherJsonPacket1);
-                    Console.WriteLine(weatherJsonPacket2);
-                    Console.WriteLine(weatherJsonPacket3);
-                    //SelectedSerialPort.Write(json);
-                    EnqueueData(weatherJsonPacket1);
-                    EnqueueData(weatherJsonPacket2);
-                    EnqueueData(weatherJsonPacket3);
+                    var weatherJson = "WEATHER" + JsonConvert.SerializeObject(weatherData) + (char)0x03;
+                    Console.WriteLine(weatherJson);
+                    EnqueueData(weatherJson);
                 }
             }
             catch (Exception)
