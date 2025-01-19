@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Net.Http;
 
 
 
@@ -69,6 +70,17 @@ namespace SerialSender
     {
         public float speed { get; set; }
         public int deg { get; set; }
+    }
+
+
+    public class RootTideObject
+    {
+        public List<Tide> data { get; set; }
+    }
+
+    public class Tide
+    {
+        public String time { get; set; }
     }
 
 
@@ -222,12 +234,14 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
             System.Threading.TimerCallback TimerDelegate3 = new System.Threading.TimerCallback(readSerial);
             System.Threading.TimerCallback TimerDelegate4 = new System.Threading.TimerCallback(sendData);
+            System.Threading.TimerCallback TimerDelegate5 = new System.Threading.TimerCallback(tideData);
 
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
             TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
+            TimerItem4 = new System.Threading.Timer(TimerDelegate5, StateObj, 5000, 24*60*60*1000); //High Low tide
 
             StateObj.TimerReference = TimerItem;
             
@@ -393,14 +407,6 @@ namespace SerialSender
 
             Console.WriteLine("Weather App function entered");
 
-
-
-            float[] temps = new float[10];
-            int[] humidities = new int[10];
-            //string[] clouds = new string[10];
-            string[] sky = new string[20];
-            float[] wind = new float[10];
-
             try
             {
                 using (WebClient client = new WebClient())
@@ -458,8 +464,85 @@ namespace SerialSender
 
 
         }
-/////////////////////////////////////////////////////////
-        
+        /////////////////////////////////////////////////////////
+        public async void tideData(object StateObj)
+        {
+
+            Console.WriteLine("Tide function entered");
+            string[] times = new string[4];
+
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    Console.WriteLine("ACCESSING tide information ...");
+
+                    DateTime utcTimeNow = DateTime.UtcNow;
+                    string isoFormat = utcTimeNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    string urlEncoded = WebUtility.UrlEncode(isoFormat);
+
+                    Console.WriteLine(urlEncoded);
+
+                    client.DefaultRequestHeaders.Add("Authorization", Secret.StromGlassTideAPI);
+                    string url = $"https://api.stormglass.io/v2/tide/extremes/point?lat={latitude.ToString()}&lng={longitude.ToString()}&start={urlEncoded}";
+
+                    HttpResponseMessage response = await client.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonTide = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(jsonTide);
+
+                        var myTides = JsonConvert.DeserializeObject<RootTideObject>(jsonTide);
+
+                        int i = 0;
+                        foreach (var json in myTides.data.Take(4))
+                        {
+                            //DateTime utcTime = DateTime.Parse(json.time);
+                            //DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.Local);
+                            DateTime utcTime = DateTime.SpecifyKind(
+                                DateTime.Parse(json.time),
+                                DateTimeKind.Utc);
+
+                            DateTime localTime = utcTime.ToLocalTime();
+
+                            string formattedTime = localTime.ToString("HH:mm");
+                            times[i] = formattedTime;
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: {response.StatusCode}");
+                    }
+
+                    //string result = string.Join(", ", times);
+                    //Console.WriteLine(result);
+
+                    TideData data = new TideData
+                    {
+                        Lo1 = times[0],
+                        Hi1 = times[1],
+                        Lo2 = times[2],
+                        Hi2 = times[3],
+                    };
+
+                    var tideJson = "TIDE" + JsonConvert.SerializeObject(data) + (char)0x03;
+                    Console.WriteLine(tideJson);
+                    EnqueueData(tideJson);
+
+                }
+            }
+            catch (Exception)
+            {
+
+                Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
+            }
+
+
+        }
+        /////////////////////////////////////////////////////////
         public void dataCheck(object StateObj)
         {
 
