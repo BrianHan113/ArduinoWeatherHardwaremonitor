@@ -43,6 +43,13 @@ namespace SerialSender
     public class RootObject
     {
         public List<myWeather> list { get; set; }
+        public City city { get; set; }
+    }
+
+    public class City
+    {
+        public string name { get; set; }
+        public string country { get; set; }
     }
     public class myWeather
     {
@@ -87,7 +94,7 @@ namespace SerialSender
 
         private static List<string> songs = new List<string>();
 
-        // Set default lat long to a location
+        // Set default lat long to Auckland, NZ
         private static double latitude = -36.747;
         private static double longitude = 174.739;
 
@@ -407,11 +414,12 @@ namespace SerialSender
 
                     var myweather = JsonConvert.DeserializeObject<RootObject>(jsonWeather);
 
-                    var currentWeather = myweather.list.ElementAt(0);
-                    var nextDayWeather = myweather.list.ElementAt(0);
+                    var currentWeather = myweather.list.ElementAt(0); // Current
+                    var nextDayWeather = myweather.list.ElementAt(8); // 24 hours
+                    var location = myweather.city.name + ", " + myweather.city.country;
 
-                    float currentWindKnots = (float)Math.Round(currentWeather.wind.speed * 1.9438452);
-                    float nextDayWindKnots = (float)Math.Round(nextDayWeather.wind.speed * 1.9438452);
+                    float currentWindKnots = (float)(currentWeather.wind.speed * 1.9438452);
+                    float nextDayWindKnots = (float)(nextDayWeather.wind.speed * 1.9438452);
 
                     ForeCast today = new ForeCast
                     {
@@ -432,6 +440,7 @@ namespace SerialSender
 
                     WeatherData weatherData = new WeatherData
                     {
+                        location = location,
                         today = today,
                         tomorrow = tomorrow,
                     };

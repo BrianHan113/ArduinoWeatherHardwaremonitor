@@ -8,6 +8,7 @@ namespace SerialSender
 {
     public struct WeatherData
     {
+        public String location;
         public ForeCast today;
         public ForeCast tomorrow;
     }
