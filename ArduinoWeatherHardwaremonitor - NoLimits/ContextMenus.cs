@@ -97,6 +97,7 @@ namespace SerialSender
         private System.Threading.Timer TimerItem2;
         private System.Threading.Timer TimerItem3;
         private System.Threading.Timer TimerItem4;
+        private System.Threading.Timer TimerItem5;
 
         private static readonly ConcurrentQueue<string> sendQueue = new ConcurrentQueue<string>();
         private bool isSending = false;
@@ -195,6 +196,11 @@ namespace SerialSender
             if (sendQueue.Count >= maxQueueSize)
             {
                 Console.WriteLine("Queue is full. Discarding item.");
+                foreach (var item in sendQueue)
+                {
+                    Console.WriteLine(item);
+                }
+
                 return;
             }
 
@@ -241,7 +247,7 @@ namespace SerialSender
             TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
-            TimerItem4 = new System.Threading.Timer(TimerDelegate5, StateObj, 5000, 24*60*60*1000); //High Low tide
+            TimerItem5 = new System.Threading.Timer(TimerDelegate5, StateObj, 5000, 6*60*60*1000); //High Low tide
 
             StateObj.TimerReference = TimerItem;
             
@@ -511,6 +517,18 @@ namespace SerialSender
                             times[i] = formattedTime;
                             i++;
                         }
+
+                        TideData data = new TideData
+                        {
+                            Lo1 = times[0],
+                            Hi1 = times[1],
+                            Lo2 = times[2],
+                            Hi2 = times[3],
+                        };
+
+                        var tideJson = "TIDE" + JsonConvert.SerializeObject(data) + (char)0x03;
+                        Console.WriteLine(tideJson);
+                        EnqueueData(tideJson);
                     }
                     else
                     {
@@ -520,17 +538,7 @@ namespace SerialSender
                     //string result = string.Join(", ", times);
                     //Console.WriteLine(result);
 
-                    TideData data = new TideData
-                    {
-                        Lo1 = times[0],
-                        Hi1 = times[1],
-                        Lo2 = times[2],
-                        Hi2 = times[3],
-                    };
-
-                    var tideJson = "TIDE" + JsonConvert.SerializeObject(data) + (char)0x03;
-                    Console.WriteLine(tideJson);
-                    EnqueueData(tideJson);
+                    
 
                 }
             }
