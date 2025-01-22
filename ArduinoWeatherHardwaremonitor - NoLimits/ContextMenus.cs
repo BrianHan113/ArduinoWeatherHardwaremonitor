@@ -44,7 +44,7 @@ namespace SerialSender
     public class WeatherObject
     {
         public Hourly hourly { get; set; }
-        
+        public Current current { get; set; }
 
     }
 
@@ -56,6 +56,11 @@ namespace SerialSender
         public List<int> weather_code { get; set; }
         public List<float> wind_speed_10m { get; set; }
         public List<int> wind_direction_10m { get; set; }
+    }
+
+    public class Current 
+    {
+        public int is_day { get; set; }
     }
 
 
@@ -357,46 +362,6 @@ namespace SerialSender
         }
         /////////////////////////////////////////////////////////
 
-        public String windDegToDirection(int deg)
-        {
-            // Deg from openweatherapi is meteorological, 0 is north, 90 is east, etc
-            if (deg >= 0 && deg <= 22 || deg > 337 && deg <= 360)
-            {
-                return "Northerly";
-            }
-            else if (deg > 22 && deg <= 67)
-            {
-                return "North-Easterly";
-            }
-            else if (deg > 67 && deg <= 112)
-            {
-                return "Easterly";
-            }
-            else if (deg > 112 && deg <= 157)
-            {
-                return "South-Easterly";
-            }
-            else if (deg > 157 && deg <= 202)
-            {
-                return "Southerly";
-            }
-            else if (deg > 202 && deg <= 247)
-            {
-                return "South-Westerly";
-            }
-            else if (deg > 247 && deg <= 292)
-            {
-                return "Westerly";
-            }
-            else if (deg > 292 && deg <= 337)
-            {
-                return "North-Westerly";
-            } else
-            {
-                return "Error, out of bounds";
-            }
-        }
-
         public void weatherapp(object StateObj)
         {
 
@@ -409,9 +374,7 @@ namespace SerialSender
                     Console.WriteLine("ACCESSING jsonWeather ...");
                     client.Proxy = null;
 
-                    string jsonWeather = client.DownloadString($"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto");
-
-                    //string jsonWeather = client.DownloadString($"https://api.openweathermap.org/data/2.5/forecast?lat={latitude.ToString()}&lon={longitude.ToString()}&appid={Secret.OpenWeatherAPI}&units=metric");
+                    string jsonWeather = client.DownloadString($"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=is_day&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto");
 
                     Console.WriteLine(jsonWeather);
 
@@ -419,8 +382,6 @@ namespace SerialSender
 
                     //Console.Write("MYWEATEHRFOIJWEOIFJWEOIF");
                     //Console.WriteLine(JsonConvert.SerializeObject(myweather));
-
-
 
                     int currentHour = DateTime.Now.Hour; // Used as current index for weather data
 
@@ -449,6 +410,7 @@ namespace SerialSender
                     WeatherData weatherData = new WeatherData
                     {
                         location = location,
+                        isDay = myweather.current.is_day,
                         forecast1 = foreCastList[0],
                         forecast2 = foreCastList[1],
                         forecast3 = foreCastList[2],
@@ -458,49 +420,12 @@ namespace SerialSender
                     var weatherJson = "WEATHER" + JsonConvert.SerializeObject(weatherData) + (char)0x03;
                     Console.WriteLine(weatherJson);
                     EnqueueData(weatherJson);
-
-                    //var currentWeather = myweather.list.ElementAt(0); // Current
-                    //var nextDayWeather = myweather.list.ElementAt(8); // 24 hours
-                    //var location = latitude + ", " + longitude;
-
-                    //float currentWindKnots = (float)(currentWeather.wind.speed * 1.9438452);
-                    //float nextDayWindKnots = (float)(nextDayWeather.wind.speed * 1.9438452);
-
-                    //ForeCast today = new ForeCast
-                    //{
-                    //    weatherIcon = currentWeather.weather.ElementAt(0).icon,
-                    //    temp = currentWeather.main.temp,
-                    //    windKnots = currentWindKnots,
-                    //    windDirection = windDegToDirection(currentWeather.wind.deg),
-
-                    //};
-
-                    //ForeCast tomorrow = new ForeCast
-                    //{
-                    //    weatherIcon = nextDayWeather.weather.ElementAt(0).icon,
-                    //    temp = nextDayWeather.main.temp,
-                    //    windKnots = nextDayWindKnots,
-                    //    windDirection = windDegToDirection(nextDayWeather.wind.deg),
-                    //};
-
-                    //WeatherData weatherData = new WeatherData
-                    //{
-                    //    location = location,
-                    //    today = today,
-                    //    tomorrow = tomorrow,
-                    //};
-
-                    //var weatherJson = "WEATHER" + JsonConvert.SerializeObject(weatherData) + (char)0x03;
-                    //Console.WriteLine(weatherJson);
-                    //EnqueueData(weatherJson);
                 }
             }
             catch (Exception)
             {
                 Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
             }
-
-
         }
         /////////////////////////////////////////////////////////
         public async void tideData(object StateObj)
