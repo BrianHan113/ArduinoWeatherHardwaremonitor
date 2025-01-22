@@ -41,36 +41,24 @@ namespace SerialSender
 {
     //////////////////////////////////////////////////////////////////
 
-    public class RootObject
+    public class WeatherObject
     {
-        public List<myWeather> list { get; set; }
-        public City city { get; set; }
+        public Hourly hourly { get; set; }
+        
+
     }
 
-    public class City
+    public class Hourly 
     {
-        public string name { get; set; }
-        public string country { get; set; }
+        public List<float> temperature_2m { get; set; }
+        public List<int> precipitation_probability { get; set; }
+        public List<float> precipitation { get; set; }
+        public List<int> weather_code { get; set; }
+        public List<float> wind_speed_10m { get; set; }
+        public List<int> wind_direction_10m { get; set; }
     }
-    public class myWeather
-    {
-        public Main main { get; set; }
-        public Wind wind { get; set; }
-        public List<Weather> weather { get; set; }
-    }
-    public class Main
-    {
-        public float temp { get; set; }
-    }
-    public class Weather
-    {
-        public string icon { get; set; }
-    }
-    public class Wind
-    {
-        public float speed { get; set; }
-        public int deg { get; set; }
-    }
+
+
 
 
     public class RootTideObject
@@ -110,6 +98,7 @@ namespace SerialSender
         // Set default lat long to Auckland, NZ
         private static double latitude = -36.747;
         private static double longitude = 174.739;
+        private static int deltaHours = 1; // Default fetch weather data in 1 hour gap
 
         public class StateObjClass
         {
@@ -420,51 +409,94 @@ namespace SerialSender
                     Console.WriteLine("ACCESSING jsonWeather ...");
                     client.Proxy = null;
 
-                    string jsonWeather = client.DownloadString($"https://api.openweathermap.org/data/2.5/forecast?lat={latitude.ToString()}&lon={longitude.ToString()}&appid={Secret.OpenWeatherAPI}&units=metric");
+                    string jsonWeather = client.DownloadString($"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto");
+
+                    //string jsonWeather = client.DownloadString($"https://api.openweathermap.org/data/2.5/forecast?lat={latitude.ToString()}&lon={longitude.ToString()}&appid={Secret.OpenWeatherAPI}&units=metric");
 
                     Console.WriteLine(jsonWeather);
 
-                    var myweather = JsonConvert.DeserializeObject<RootObject>(jsonWeather);
+                    var myweather = JsonConvert.DeserializeObject<WeatherObject>(jsonWeather);
 
-                    var currentWeather = myweather.list.ElementAt(0); // Current
-                    var nextDayWeather = myweather.list.ElementAt(8); // 24 hours
-                    var location = myweather.city.name + ", " + myweather.city.country;
+                    //Console.Write("MYWEATEHRFOIJWEOIFJWEOIF");
+                    //Console.WriteLine(JsonConvert.SerializeObject(myweather));
 
-                    float currentWindKnots = (float)(currentWeather.wind.speed * 1.9438452);
-                    float nextDayWindKnots = (float)(nextDayWeather.wind.speed * 1.9438452);
 
-                    ForeCast today = new ForeCast
+
+                    int currentHour = DateTime.Now.Hour; // Used as current index for weather data
+
+                    ForeCast currentForecast;
+
+                    List<ForeCast> foreCastList = new List<ForeCast>();
+
+                    for (int i = 0; i < 4; i++)
                     {
-                        weatherIcon = currentWeather.weather.ElementAt(0).icon,
-                        temp = currentWeather.main.temp,
-                        windKnots = currentWindKnots,
-                        windDirection = windDegToDirection(currentWeather.wind.deg),
+                        currentForecast = new ForeCast
+                        {
+                            temp = myweather.hourly.temperature_2m[currentHour],
+                            prec_probability = myweather.hourly.precipitation_probability[currentHour],
+                            prec = myweather.hourly.precipitation[currentHour],
+                            weather_code = myweather.hourly.weather_code[currentHour],
+                            wind_speed = myweather.hourly.wind_speed_10m[currentHour],
+                            wind_dir = myweather.hourly.wind_direction_10m[currentHour],
+                        };
 
-                    };
+                        foreCastList.Add(currentForecast);
+                        currentHour += deltaHours;
+                    }
 
-                    ForeCast tomorrow = new ForeCast
-                    {
-                        weatherIcon = nextDayWeather.weather.ElementAt(0).icon,
-                        temp = nextDayWeather.main.temp,
-                        windKnots = nextDayWindKnots,
-                        windDirection = windDegToDirection(nextDayWeather.wind.deg),
-                    };
+                    String location = latitude + ", " + longitude;
 
                     WeatherData weatherData = new WeatherData
                     {
                         location = location,
-                        today = today,
-                        tomorrow = tomorrow,
+                        forecast1 = foreCastList[0],
+                        forecast2 = foreCastList[1],
+                        forecast3 = foreCastList[2],
+                        forecast4 = foreCastList[3],
                     };
 
                     var weatherJson = "WEATHER" + JsonConvert.SerializeObject(weatherData) + (char)0x03;
                     Console.WriteLine(weatherJson);
                     EnqueueData(weatherJson);
+
+                    //var currentWeather = myweather.list.ElementAt(0); // Current
+                    //var nextDayWeather = myweather.list.ElementAt(8); // 24 hours
+                    //var location = latitude + ", " + longitude;
+
+                    //float currentWindKnots = (float)(currentWeather.wind.speed * 1.9438452);
+                    //float nextDayWindKnots = (float)(nextDayWeather.wind.speed * 1.9438452);
+
+                    //ForeCast today = new ForeCast
+                    //{
+                    //    weatherIcon = currentWeather.weather.ElementAt(0).icon,
+                    //    temp = currentWeather.main.temp,
+                    //    windKnots = currentWindKnots,
+                    //    windDirection = windDegToDirection(currentWeather.wind.deg),
+
+                    //};
+
+                    //ForeCast tomorrow = new ForeCast
+                    //{
+                    //    weatherIcon = nextDayWeather.weather.ElementAt(0).icon,
+                    //    temp = nextDayWeather.main.temp,
+                    //    windKnots = nextDayWindKnots,
+                    //    windDirection = windDegToDirection(nextDayWeather.wind.deg),
+                    //};
+
+                    //WeatherData weatherData = new WeatherData
+                    //{
+                    //    location = location,
+                    //    today = today,
+                    //    tomorrow = tomorrow,
+                    //};
+
+                    //var weatherJson = "WEATHER" + JsonConvert.SerializeObject(weatherData) + (char)0x03;
+                    //Console.WriteLine(weatherJson);
+                    //EnqueueData(weatherJson);
                 }
             }
             catch (Exception)
             {
-
                 Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
             }
 

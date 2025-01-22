@@ -18,7 +18,7 @@ namespace SerialSender
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            WinAmp.SetupWinamp();
+            //WinAmp.SetupWinamp();
 
             
 
