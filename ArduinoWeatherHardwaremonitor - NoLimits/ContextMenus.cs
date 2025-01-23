@@ -46,6 +46,8 @@ namespace SerialSender
         public Hourly hourly { get; set; }
         public Current current { get; set; }
 
+        public Daily daily { get; set; }
+
     }
 
     public class Hourly 
@@ -56,11 +58,17 @@ namespace SerialSender
         public List<int> weather_code { get; set; }
         public List<float> wind_speed_10m { get; set; }
         public List<int> wind_direction_10m { get; set; }
+        public List<String> time { get; set; }
     }
 
     public class Current 
     {
         public int is_day { get; set; }
+    }
+    public class Daily
+    {
+        public List<String> sunrise { get; set; }
+        public List<String> sunset { get; set; }
     }
 
 
@@ -104,7 +112,7 @@ namespace SerialSender
         private static double latitude = -36.747;
         private static double longitude = 174.739;
         private static int deltaHours = 1; // Default fetch weather data in 1 hour gap
-
+        private static readonly object deltaHoursLock = new object();
         public class StateObjClass
         {
             public System.Threading.Timer TimerReference;
@@ -238,7 +246,7 @@ namespace SerialSender
 
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
-            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 5*60*1000); //weather - free api calls abosulte min is 86.4 secs per call
+            TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 15*60*1000); //weather
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
             TimerItem5 = new System.Threading.Timer(TimerDelegate5, StateObj, 5000, 6*60*60*1000); //High Low tide
@@ -267,7 +275,10 @@ namespace SerialSender
                 if (data == "REFRESHWEATHER")
                 {
                     Console.WriteLine("Refreshing Weather info");
-                    weatherapp(null);
+                    lock (deltaHoursLock) // Lock to protect the shared resource
+                    {
+                        weatherapp(null);  // Assuming this method needs to be protected
+                    }
                 } else if (data == "LOCKPC")
                 {
                     Console.WriteLine("Lock PC");
@@ -345,6 +356,16 @@ namespace SerialSender
 
                     Console.WriteLine($"Latitude: {latitude}, Longitude: {longitude}");
                 }
+                else if (data.StartsWith("WEATHERDELTA"))
+                {
+                    int deltaHoursLocal = int.Parse(data.Substring(12));
+
+                    lock (deltaHoursLock)  // Lock to protect the deltaHours resource
+                    {
+                        deltaHours = deltaHoursLocal;
+                        Console.WriteLine(deltaHours);
+                    }
+                }
             };
         }
 
@@ -374,7 +395,7 @@ namespace SerialSender
                     Console.WriteLine("ACCESSING jsonWeather ...");
                     client.Proxy = null;
 
-                    string jsonWeather = client.DownloadString($"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=is_day&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto");
+                    string jsonWeather = client.DownloadString($"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=is_day&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m&daily=sunrise,sunset&timezone=auto");
 
                     Console.WriteLine(jsonWeather);
 
@@ -383,43 +404,80 @@ namespace SerialSender
                     //Console.Write("MYWEATEHRFOIJWEOIFJWEOIF");
                     //Console.WriteLine(JsonConvert.SerializeObject(myweather));
 
-                    int currentHour = DateTime.Now.Hour; // Used as current index for weather data
+                    int currentHour = DateTime.Now.Hour; // Used as initial index for hourly
+                    int currentDay; // Used as index for daily
 
                     ForeCast currentForecast;
 
                     List<ForeCast> foreCastList = new List<ForeCast>();
 
-                    for (int i = 0; i < 4; i++)
+                    
+                    for (int i = 1; i < 5; i++)
                     {
+                        currentDay = (int)Math.Floor((float)currentHour / 24.0);
+
+                        DateTime currentTime = DateTime.Parse(myweather.hourly.time[currentHour]);
+                        DateTime sunsetTime = DateTime.Parse(myweather.daily.sunset[currentDay]);
+                        DateTime sunriseTime = DateTime.Parse(myweather.daily.sunrise[currentDay]);
+
+                        //Console.WriteLine(currentTime.ToString());
+                        //Console.WriteLine(sunsetTime.ToString());
+                        //Console.WriteLine(sunriseTime.ToString());
+
+
+                        bool isDay = (currentTime >= sunriseTime) && (currentTime < sunsetTime);
+
+                        //Console.WriteLine(isDay);
+
                         currentForecast = new ForeCast
                         {
+                            id = i,
                             temp = myweather.hourly.temperature_2m[currentHour],
                             prec_probability = myweather.hourly.precipitation_probability[currentHour],
                             prec = myweather.hourly.precipitation[currentHour],
                             weather_code = myweather.hourly.weather_code[currentHour],
                             wind_speed = myweather.hourly.wind_speed_10m[currentHour],
                             wind_dir = myweather.hourly.wind_direction_10m[currentHour],
+                            isDay = isDay,
                         };
 
                         foreCastList.Add(currentForecast);
                         currentHour += deltaHours;
                     }
 
-                    String location = latitude + ", " + longitude;
-
-                    WeatherData weatherData = new WeatherData
+                    Location location = new Location
                     {
-                        location = location,
-                        isDay = myweather.current.is_day,
-                        forecast1 = foreCastList[0],
-                        forecast2 = foreCastList[1],
-                        forecast3 = foreCastList[2],
-                        forecast4 = foreCastList[3],
+                        latitude = latitude,
+                        longitude = longitude,
                     };
 
-                    var weatherJson = "WEATHER" + JsonConvert.SerializeObject(weatherData) + (char)0x03;
-                    Console.WriteLine(weatherJson);
-                    EnqueueData(weatherJson);
+                    // Cant send full weatherdata at once, data ends up fragmented
+                    //WeatherData weatherData = new WeatherData
+                    //{
+                    //    location = location,
+                    //    forecast1 = foreCastList[0],
+                    //    forecast2 = foreCastList[1],
+                    //    forecast3 = foreCastList[2],
+                    //    forecast4 = foreCastList[3],
+                    //};
+
+                    var locationString = "WEATHER" + JsonConvert.SerializeObject(location) + (char)0x03;
+                    var weather1 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[0]) + (char)0x03;
+                    var weather2 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[1]) + (char)0x03;
+                    var weather3 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[2]) + (char)0x03;
+                    var weather4 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[3]) + (char)0x03;
+
+                    EnqueueData(locationString);
+                    EnqueueData(weather1);
+                    EnqueueData(weather2);
+                    EnqueueData(weather3);
+                    EnqueueData(weather4);
+
+                    Console.WriteLine(locationString);
+                    Console.WriteLine(weather1);
+                    Console.WriteLine(weather2);
+                    Console.WriteLine(weather3);
+                    Console.WriteLine(weather4);
                 }
             }
             catch (Exception)

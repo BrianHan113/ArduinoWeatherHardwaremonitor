@@ -9,7 +9,6 @@ namespace SerialSender
     public struct WeatherData
     {
         public String location;
-        public int isDay;
         public ForeCast forecast1;
         public ForeCast forecast2;
         public ForeCast forecast3;
@@ -18,11 +17,19 @@ namespace SerialSender
 
     public struct ForeCast
     {
+        public int id;
         public float temp;
         public int prec_probability;
         public float prec;
         public int weather_code;
         public float wind_speed;
         public int wind_dir;
+        public bool isDay;
+    }
+
+    public struct Location
+    {
+        public double latitude;
+        public double longitude;
     }
 }
