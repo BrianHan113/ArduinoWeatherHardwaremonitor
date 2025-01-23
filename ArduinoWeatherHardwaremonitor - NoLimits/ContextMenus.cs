@@ -445,11 +445,7 @@ namespace SerialSender
                         currentHour += deltaHours;
                     }
 
-                    Location location = new Location
-                    {
-                        latitude = latitude,
-                        longitude = longitude,
-                    };
+                    String location = latitude + ", " + longitude;
 
                     // Cant send full weatherdata at once, data ends up fragmented
                     //WeatherData weatherData = new WeatherData
@@ -461,7 +457,7 @@ namespace SerialSender
                     //    forecast4 = foreCastList[3],
                     //};
 
-                    var locationString = "WEATHER" + JsonConvert.SerializeObject(location) + (char)0x03;
+                    var locationString = "WEATHERLOCATION" + location + (char)0x03;
                     var weather1 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[0]) + (char)0x03;
                     var weather2 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[1]) + (char)0x03;
                     var weather3 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[2]) + (char)0x03;
