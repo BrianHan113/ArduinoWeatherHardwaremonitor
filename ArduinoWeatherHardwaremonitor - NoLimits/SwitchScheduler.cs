@@ -8,7 +8,7 @@ static class Scheduler
 {
     private static readonly ConcurrentDictionary<string, Timer> timers = new ConcurrentDictionary<string, Timer>();
 
-    public static void ScheduleSwitch(string SW, string start, string end)
+    public static void ScheduleSwitch(string SW, string channel, string start, string end)
     {
         // Parse input time (format: HHmm, e.g., "0600")
         if (!TimeSpan.TryParseExact(start.Insert(2, ":"), "hh\\:mm", null, out TimeSpan startTime) ||
@@ -55,10 +55,10 @@ static class Scheduler
             {
                 action = "ON";
             }
-            Console.WriteLine($"'{SW}' {action} at {DateTime.Now:HH:mm:ss}");
+            Console.WriteLine("SCHEDULE" + SW + action + channel + (char)0x03);
             
 
-            ContextMenus.EnqueueData("SCHEDULE" + SW + action + (char)0x03);
+            ContextMenus.EnqueueData("SCHEDULE" + SW + action + channel + (char)0x03);
 
         }, null, delayToStart, Timeout.InfiniteTimeSpan);
 
@@ -73,16 +73,15 @@ static class Scheduler
             {
                 action = "OFF";
             }
-            Console.WriteLine($"'{SW}' {action} at {DateTime.Now:HH:mm:ss}");
-            
+            Console.WriteLine("SCHEDULE" + SW + action + (char)0x03);
             ContextMenus.EnqueueData("SCHEDULE" + SW + action + (char)0x03);
 
-            ScheduleSwitch(SW, start, end);
+            ScheduleSwitch(SW, channel, start, end);
 
         }, null, delayToEnd, Timeout.InfiniteTimeSpan);
 
 
-        String timerId = SW + start + end;
+        String timerId = SW + channel + start + end;
 
         // Store the timer
         if (timers.TryAdd(timerId, timer) && timers.TryAdd(timerId + "END", endTimer))

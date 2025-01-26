@@ -319,22 +319,48 @@ namespace SerialSender
                 {
                     if (data.Substring(8).StartsWith("CLEAR"))
                     {
-                        String clearString = data.Substring(13);
-                        String start = clearString.Substring(0, 4);
-                        String end = clearString.Substring(4, 4);
-                        String SW = clearString.Substring(8);
-                        Console.WriteLine("Clearing: " + SW + start + end);
-                        Scheduler.CancelTask(SW + start + end);
-                        Scheduler.CancelTask(SW + start + end + "END");
+                        data = data.Substring(5);
+                        string start = data.Substring(8, 4);
+                        string end = data.Substring(12, 4);
+
+                        int swStartIndex = 16;
+                        int channelStartIndex = data.IndexOf("CHANNEL", swStartIndex) + "CHANNEL".Length;
+                        string SW = data.Substring(swStartIndex, channelStartIndex - swStartIndex - "CHANNEL".Length);
+                        string channel = data.Substring(channelStartIndex);
+
+                        if (SW == "MOTIONSENSOR" || SW == "TEMPSENSOR")
+                        {
+                            channel = "";
+                        }
+                        Console.WriteLine("Clearing: " + SW + channel + start + end);
+                        Scheduler.CancelTask(SW + channel + start + end);
+                        Scheduler.CancelTask(SW + channel + start + end + "END");
                     } else
                     {
-                        //Console.WriteLine("Schedule commands");
-                        String start = data.Substring(8, 4);
-                        String end = data.Substring(12, 4);
-                        String SW = data.Substring(16);
+                        string start = data.Substring(8, 4);
+                        string end = data.Substring(12, 4);
 
-                        Scheduler.ScheduleSwitch(SW, start, end);
-                        //Scheduler.ScheduleSwitch(SW, "1618", "1619");
+                        int swStartIndex = 16;
+                        int channelStartIndex = data.IndexOf("CHANNEL", swStartIndex) + "CHANNEL".Length;
+                        string SW = data.Substring(swStartIndex, channelStartIndex - swStartIndex - "CHANNEL".Length);
+                        string channel = data.Substring(channelStartIndex);
+
+                        if (SW == "MOTIONSENSOR" || SW == "TEMPSENSOR")
+                        {
+                            channel = "";
+                        }
+
+                        Console.WriteLine($"Start: {start}");
+                        Console.WriteLine($"End: {end}");
+                        Console.WriteLine($"Switch: {SW}");
+                        Console.WriteLine($"Channel: {channel}");
+
+                        Scheduler.ScheduleSwitch(SW, channel, start, end);
+                        //Scheduler.ScheduleSwitch("SW1", "AB", "2255", "2256");
+                        //Scheduler.ScheduleSwitch("MOTIONSENSOR", "", "2255", "2256");
+                        //Scheduler.ScheduleSwitch("SW2", "B", "2255", "2256");
+
+
 
                         //Scheduler.ScheduleSwitch("MOTIONSENSOR", "0124", "0125");
                         //Scheduler.ScheduleSwitch("SW1", "2259", "2300");
