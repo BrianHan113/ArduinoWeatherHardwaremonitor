@@ -245,14 +245,14 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
             System.Threading.TimerCallback TimerDelegate3 = new System.Threading.TimerCallback(readSerial);
             System.Threading.TimerCallback TimerDelegate4 = new System.Threading.TimerCallback(sendData);
-            System.Threading.TimerCallback TimerDelegate5 = new System.Threading.TimerCallback(tideData);
+            //System.Threading.TimerCallback TimerDelegate5 = new System.Threading.TimerCallback(tideData);
 
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
             TimerItem2 = new System.Threading.Timer(TimerDelegate2, StateObj, 5000, 15*60*1000); //weather
             TimerItem3 = new System.Threading.Timer(TimerDelegate3, StateObj, 1000, 1000); //Serial transmitted from esp
             TimerItem4 = new System.Threading.Timer(TimerDelegate4, StateObj, 1000, 1000); //Send serial
-            TimerItem5 = new System.Threading.Timer(TimerDelegate5, StateObj, 5000, 6*60*60*1000); //High Low tide
+            //TimerItem5 = new System.Threading.Timer(TimerDelegate5, StateObj, 5000, 6*60*60*1000); //High Low tide
 
             StateObj.TimerReference = TimerItem;
             
@@ -317,7 +317,11 @@ namespace SerialSender
                 else if (data == "DECREASEMUSIC")
                 {
                     WinAmp.SendMessage(WinAmp.hwnd, WinAmp.WM_COMMAND, (IntPtr)WinAmp.DECREASE_VOLUME, IntPtr.Zero);
-                } 
+                } else if (data == "REFRESHTIDE")
+                {
+                    Console.WriteLine("Refreshing Tide info");
+                    tideData(null);
+                }
                 else if (data.StartsWith("SCHEDULE"))
                 {
                     if (data.Substring(8).StartsWith("CLEAR"))
@@ -599,77 +603,6 @@ namespace SerialSender
 
                 Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
             }
-
-
-            
-
-            //Console.WriteLine("Tide function entered");
-            //string[] times = new string[3];
-
-            //try
-            //{
-            //    using (var client = new HttpClient())
-            //    {
-            //        Console.WriteLine("ACCESSING tide information ...");
-
-            //        DateTime utcTimeNow = DateTime.UtcNow;
-            //        DateTime utcTimeYesterday = utcTimeNow.AddHours(-24);
-
-            //        Console.WriteLine(utcTimeYesterday.ToString());
-            //        string isoFormat = utcTimeYesterday.ToString("o"); // Use "o" for RoundtripKind format
-            //        string urlEncoded = WebUtility.UrlEncode(isoFormat);
-
-            //        Console.WriteLine(urlEncoded);
-
-            //        client.DefaultRequestHeaders.Add("Authorization", Secret.StromGlassTideAPI);
-            //        string url = $"https://api.stormglass.io/v2/tide/extremes/point?lat={latitude.ToString()}&lng={longitude.ToString()}&start={urlEncoded}";
-
-            //        HttpResponseMessage response = await client.GetAsync(url);
-
-            //        if (response.IsSuccessStatusCode)
-            //        {
-            //            string jsonTide = await response.Content.ReadAsStringAsync();
-            //            Console.WriteLine(jsonTide);
-
-            //            var myTides = JsonConvert.DeserializeObject<RootTideObject>(jsonTide);
-
-            //            var tides = myTides.data.Take(12).ToList();
-
-            //            for (int i = 0; i < tides.Count; i++)
-            //            {
-            //                Console.WriteLine(tides[i]);
-            //            }
-
-            //            TideData data = new TideData
-            //            {
-            //                Hi1 = 
-            //                Lo = 
-            //                Hi2 = 
-            //            };
-
-            //            var tideJson = "TIDE" + JsonConvert.SerializeObject(data) + (char)0x03;
-            //            Console.WriteLine(tideJson);
-            //            EnqueueData(tideJson);
-            //        }
-            //        else
-            //        {
-            //            Console.WriteLine($"Error: {response.StatusCode}");
-            //        }
-
-            //        //string result = string.Join(", ", times);
-            //        //Console.WriteLine(result);
-
-
-
-            //    }
-            //}
-            //catch (Exception)
-            //{
-
-            //    Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
-            //}
-
-
         }
         /////////////////////////////////////////////////////////
         public void dataCheck(object StateObj)
