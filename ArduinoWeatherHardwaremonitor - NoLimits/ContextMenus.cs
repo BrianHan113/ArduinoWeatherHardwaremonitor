@@ -82,6 +82,9 @@ namespace SerialSender
     public class Tide
     {
         public String time { get; set; }
+        public float height { get; set; }
+        public String type { get; set; }
+
     }
 
 
@@ -511,9 +514,8 @@ namespace SerialSender
         public async void tideData(object StateObj)
         {
 
-            Console.WriteLine("Tide function entered");
-            string[] times = new string[4];
-
+            Console.WriteLine("ACCESSING tide information ...");
+            TideForecast tideForecast = new TideForecast();
 
             try
             {
@@ -522,7 +524,10 @@ namespace SerialSender
                     Console.WriteLine("ACCESSING tide information ...");
 
                     DateTime utcTimeNow = DateTime.UtcNow;
-                    string isoFormat = utcTimeNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    DateTime utcTimeYesterday = utcTimeNow.AddHours(-24);
+
+                    Console.WriteLine(utcTimeYesterday.ToString());
+                    string isoFormat = utcTimeYesterday.ToString("o"); // Use "o" for RoundtripKind format
                     string urlEncoded = WebUtility.UrlEncode(isoFormat);
 
                     Console.WriteLine(urlEncoded);
@@ -538,45 +543,55 @@ namespace SerialSender
                         Console.WriteLine(jsonTide);
 
                         var myTides = JsonConvert.DeserializeObject<RootTideObject>(jsonTide);
+                        var tides = myTides.data.Take(12).ToList();
 
-                        int i = 0;
-                        foreach (var json in myTides.data.Take(4))
+                        for (int i = 0; i < tides.Count; i++)
                         {
-                            //DateTime utcTime = DateTime.Parse(json.time);
-                            //DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.Local);
-                            DateTime utcTime = DateTime.SpecifyKind(
-                                DateTime.Parse(json.time),
-                                DateTimeKind.Utc);
+                            string timeString = tides[i].time;
+                            DateTime time = DateTime.Parse(timeString);
+                            string type = tides[i].type;
+                            float height = tides[i].height;
 
-                            DateTime localTime = utcTime.ToLocalTime();
+                            if (DateTime.Now < time) // Find first occurence where the time is in the future
+                            {
+                                if (type == "high")
+                                {
+                                    String high1Time = DateTime.Parse(tides[i - 2].time).ToString("HH:mm");
+                                    String lowTime = DateTime.Parse(tides[i - 1].time).ToString("HH:mm");
+                                    String high2Time = time.ToString("HH:mm");
 
-                            string formattedTime = localTime.ToString("HH:mm");
-                            times[i] = formattedTime;
-                            i++;
+                                    tideForecast = new TideForecast
+                                    {
+                                        High1 = new TideData { height = tides[i - 2].height, time = high1Time },
+                                        Low = new TideData { height = tides[i - 1].height, time = lowTime },
+                                        High2 = new TideData { height = height, time = high2Time },
+                                    };
+                                }
+                                else if (type == "low")
+                                {
+                                    String high1Time = DateTime.Parse(tides[i - 1].time).ToString("HH:mm");
+                                    String lowTime = time.ToString("HH:mm");
+                                    String high2Time = DateTime.Parse(tides[i + 1].time).ToString("HH:mm");
+
+                                    tideForecast = new TideForecast
+                                    {
+                                        High1 = new TideData { height = tides[i - 1].height, time = high1Time },
+                                        Low = new TideData { height = height, time = lowTime },
+                                        High2 = new TideData { height = tides[i + 1].height, time = high2Time },
+                                    };
+                                }
+                                break;
+                            }
                         }
 
-                        TideData data = new TideData
-                        {
-                            Lo1 = times[0],
-                            Hi1 = times[1],
-                            Lo2 = times[2],
-                            Hi2 = times[3],
-                        };
-
-                        var tideJson = "TIDE" + JsonConvert.SerializeObject(data) + (char)0x03;
-                        Console.WriteLine(tideJson);
+                        var tideJson = "TIDE" + JsonConvert.SerializeObject(tideForecast) + (char)0x03;
                         EnqueueData(tideJson);
+                        Console.WriteLine(tideJson);
                     }
                     else
                     {
                         Console.WriteLine($"Error: {response.StatusCode}");
                     }
-
-                    //string result = string.Join(", ", times);
-                    //Console.WriteLine(result);
-
-                    
-
                 }
             }
             catch (Exception)
@@ -584,6 +599,75 @@ namespace SerialSender
 
                 Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
             }
+
+
+            
+
+            //Console.WriteLine("Tide function entered");
+            //string[] times = new string[3];
+
+            //try
+            //{
+            //    using (var client = new HttpClient())
+            //    {
+            //        Console.WriteLine("ACCESSING tide information ...");
+
+            //        DateTime utcTimeNow = DateTime.UtcNow;
+            //        DateTime utcTimeYesterday = utcTimeNow.AddHours(-24);
+
+            //        Console.WriteLine(utcTimeYesterday.ToString());
+            //        string isoFormat = utcTimeYesterday.ToString("o"); // Use "o" for RoundtripKind format
+            //        string urlEncoded = WebUtility.UrlEncode(isoFormat);
+
+            //        Console.WriteLine(urlEncoded);
+
+            //        client.DefaultRequestHeaders.Add("Authorization", Secret.StromGlassTideAPI);
+            //        string url = $"https://api.stormglass.io/v2/tide/extremes/point?lat={latitude.ToString()}&lng={longitude.ToString()}&start={urlEncoded}";
+
+            //        HttpResponseMessage response = await client.GetAsync(url);
+
+            //        if (response.IsSuccessStatusCode)
+            //        {
+            //            string jsonTide = await response.Content.ReadAsStringAsync();
+            //            Console.WriteLine(jsonTide);
+
+            //            var myTides = JsonConvert.DeserializeObject<RootTideObject>(jsonTide);
+
+            //            var tides = myTides.data.Take(12).ToList();
+
+            //            for (int i = 0; i < tides.Count; i++)
+            //            {
+            //                Console.WriteLine(tides[i]);
+            //            }
+
+            //            TideData data = new TideData
+            //            {
+            //                Hi1 = 
+            //                Lo = 
+            //                Hi2 = 
+            //            };
+
+            //            var tideJson = "TIDE" + JsonConvert.SerializeObject(data) + (char)0x03;
+            //            Console.WriteLine(tideJson);
+            //            EnqueueData(tideJson);
+            //        }
+            //        else
+            //        {
+            //            Console.WriteLine($"Error: {response.StatusCode}");
+            //        }
+
+            //        //string result = string.Join(", ", times);
+            //        //Console.WriteLine(result);
+
+
+
+            //    }
+            //}
+            //catch (Exception)
+            //{
+
+            //    Console.WriteLine("############################### ATTENTION: No internet connection for weather ###############################");
+            //}
 
 
         }

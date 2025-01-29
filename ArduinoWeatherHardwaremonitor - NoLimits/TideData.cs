@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace SerialSender
 {
+    public struct TideForecast
+    {
+        public TideData High1;
+        public TideData Low;
+        public TideData High2;
+    }
+
     public struct TideData
     {
-        public String Lo1;
-        public String Hi1;
-        public String Lo2;
-        public String Hi2;
+        public string time;
+        public float height;
     }
 }
