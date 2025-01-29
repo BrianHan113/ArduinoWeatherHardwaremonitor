@@ -584,6 +584,7 @@ namespace SerialSender
                                         High2 = new TideData { height = tides[i + 1].height, time = high2Time },
                                     };
                                 }
+                                tideForecast.currentTime = DateTime.Now.ToString("HH:mm");
                                 break;
                             }
                         }

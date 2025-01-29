@@ -11,6 +11,7 @@ namespace SerialSender
         public TideData High1;
         public TideData Low;
         public TideData High2;
+        public string currentTime;
     }
 
     public struct TideData
