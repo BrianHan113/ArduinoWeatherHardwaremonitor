@@ -20,7 +20,8 @@ namespace SerialSender
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            //WinAmp.SetupWinamp();
+            WinAmp.SetupWinamp();
+            Console.WriteLine(WinAmp.directoryPath);
 
 
             using (ProcessIcon pi = new ProcessIcon())

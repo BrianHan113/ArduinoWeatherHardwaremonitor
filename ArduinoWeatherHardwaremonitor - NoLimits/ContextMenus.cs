@@ -298,7 +298,7 @@ namespace SerialSender
                     try
                     {
                         songDir = songs[index];
-                        Process.Start("D:\\winamp_install\\Winamp\\winamp.exe", "\"" + songDir + "\"");
+                        Process.Start(WinAmp.directoryPath + "\\winamp.exe", "\"" + songDir + "\"");
                     }
                     catch (Exception)
                     {
@@ -307,7 +307,7 @@ namespace SerialSender
                     
                 } else if (data == "PAUSEMUSIC")
                 {
-                    Process.Start("D:\\winamp_install\\Winamp\\winamp.exe", "/pause");
+                    Process.Start(WinAmp.directoryPath + "\\winamp.exe", "/pause");
                 }
                 else if (data == "INCREASEMUSIC")
                 {
