@@ -3,19 +3,10 @@ using System.IO.Ports;
 using System.Diagnostics;
 using System.Windows.Forms;
 using SerialSender.Properties;
-using System.Drawing;
-using LibreHardwareMonitor;
-using LibreHardwareMonitor.Hardware;
-using System.Timers;
-using System.Net.NetworkInformation;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
-using System.Xml;
 using Newtonsoft.Json;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.IO;
@@ -35,6 +26,10 @@ using System.Net.Http;
 /// Code is free for all but credits for my work (3 weeks coding/learning) apprechiated
 /// Advanced Serial Port Monitor can spy on the serial port after activating in the iconprocess process for debugging
 /// Have Fun!
+/// 
+/// 02/02/2025 - Hello
+/// Added some stuff check it out c:
+/// 
 /// </summary>
 /// 
 namespace SerialSender
@@ -44,7 +39,6 @@ namespace SerialSender
     public class WeatherObject
     {
         public Hourly hourly { get; set; }
-        public Current current { get; set; }
 
         public Daily daily { get; set; }
 
@@ -60,19 +54,11 @@ namespace SerialSender
         public List<int> wind_direction_10m { get; set; }
         public List<String> time { get; set; }
     }
-
-    public class Current 
-    {
-        public int is_day { get; set; }
-    }
     public class Daily
     {
         public List<String> sunrise { get; set; }
         public List<String> sunset { get; set; }
     }
-
-
-
 
     public class RootTideObject
     {
@@ -111,10 +97,10 @@ namespace SerialSender
 
         private static List<string> songs = new List<string>();
 
-        // Set default lat long to Auckland, NZ
+        // Set default lat long to Auckland, NZ to match nextion default
         private static double latitude = -36.747;
         private static double longitude = 174.739;
-        private static int deltaHours = 1; // Default fetch weather data in 1 hour gap
+        private static int deltaHours = 1; // Default fetch weather data in 1 hour gaps
         private static readonly object deltaHoursLock = new object();
         public class StateObjClass
         {
@@ -245,7 +231,7 @@ namespace SerialSender
             System.Threading.TimerCallback TimerDelegate2 = new System.Threading.TimerCallback(weatherapp);
             System.Threading.TimerCallback TimerDelegate3 = new System.Threading.TimerCallback(readSerial);
             System.Threading.TimerCallback TimerDelegate4 = new System.Threading.TimerCallback(sendData);
-            //System.Threading.TimerCallback TimerDelegate5 = new System.Threading.TimerCallback(tideData);
+            //System.Threading.TimerCallback TimerDelegate5 = new System.Threading.TimerCallback(tideData); // Uncomment to auto schedule tide data refresh (But tokens are very expensive)
 
 
             TimerItem = new System.Threading.Timer(TimerDelegate, StateObj, 1000, 2500); //hardware
@@ -265,22 +251,16 @@ namespace SerialSender
         {
             SelectedSerialPort.DataReceived += (sender, e) =>
             {
-                // Read the line from the serial port
                 string data = SelectedSerialPort.ReadLine();
                 data = data.TrimEnd('\r');
                 Console.WriteLine("Received: " + data);
 
-                //foreach (char c in data)
-                //{
-                //    Console.WriteLine($"Char: {c} ASCII: {(int)c}");
-                //}
-
                 if (data == "REFRESHWEATHER")
                 {
                     Console.WriteLine("Refreshing Weather info");
-                    lock (deltaHoursLock) // Lock to protect the shared resource
+                    lock (deltaHoursLock)
                     {
-                        weatherapp(null);  // Assuming this method needs to be protected
+                        weatherapp(null);
                     }
                 } else if (data == "LOCKPC")
                 {
@@ -363,18 +343,6 @@ namespace SerialSender
                         Console.WriteLine($"Channel: {channel}");
 
                         Scheduler.ScheduleSwitch(SW, channel, start, end);
-                        //Scheduler.ScheduleSwitch("SW1", "AB", "2255", "2256");
-                        //Scheduler.ScheduleSwitch("MOTIONSENSOR", "", "2255", "2256");
-                        //Scheduler.ScheduleSwitch("SW2", "B", "2255", "2256");
-
-
-
-                        //Scheduler.ScheduleSwitch("MOTIONSENSOR", "0124", "0125");
-                        //Scheduler.ScheduleSwitch("SW1", "2259", "2300");
-                        //Scheduler.ScheduleSwitch("SW2", "2259", "2300");
-
-
-                        //Console.WriteLine(start + " " + end + " " + SW);
                     }
                 }
                 else if (data.StartsWith("LOCATION")) 
@@ -393,7 +361,7 @@ namespace SerialSender
                 {
                     int deltaHoursLocal = int.Parse(data.Substring(12));
 
-                    lock (deltaHoursLock)  // Lock to protect the deltaHours resource
+                    lock (deltaHoursLock)
                     {
                         deltaHours = deltaHoursLocal;
                         Console.WriteLine(deltaHours);
@@ -434,9 +402,6 @@ namespace SerialSender
 
                     var myweather = JsonConvert.DeserializeObject<WeatherObject>(jsonWeather);
 
-                    //Console.Write("MYWEATEHRFOIJWEOIFJWEOIF");
-                    //Console.WriteLine(JsonConvert.SerializeObject(myweather));
-
                     int currentHour = DateTime.Now.Hour; // Used as initial index for hourly
                     int currentDay; // Used as index for daily
 
@@ -453,14 +418,7 @@ namespace SerialSender
                         DateTime sunsetTime = DateTime.Parse(myweather.daily.sunset[currentDay]);
                         DateTime sunriseTime = DateTime.Parse(myweather.daily.sunrise[currentDay]);
 
-                        //Console.WriteLine(currentTime.ToString());
-                        //Console.WriteLine(sunsetTime.ToString());
-                        //Console.WriteLine(sunriseTime.ToString());
-
-
                         bool isDay = (currentTime >= sunriseTime) && (currentTime < sunsetTime);
-
-                        //Console.WriteLine(isDay);
 
                         currentForecast = new ForeCast
                         {
@@ -479,16 +437,6 @@ namespace SerialSender
                     }
 
                     String location = latitude + ", " + longitude;
-
-                    // Cant send full weatherdata at once, data ends up fragmented
-                    //WeatherData weatherData = new WeatherData
-                    //{
-                    //    location = location,
-                    //    forecast1 = foreCastList[0],
-                    //    forecast2 = foreCastList[1],
-                    //    forecast3 = foreCastList[2],
-                    //    forecast4 = foreCastList[3],
-                    //};
 
                     var locationString = "WEATHERLOCATION" + location + (char)0x03;
                     var weather1 = "WEATHER" + JsonConvert.SerializeObject(foreCastList[0]) + (char)0x03;
@@ -608,73 +556,36 @@ namespace SerialSender
         /////////////////////////////////////////////////////////
         public void dataCheck(object StateObj)
         {
-
-            float GpuMemory = -1.0f;
-            float GpuFan = -1.0f;
-            float GpuLoad = -1.0f;
-            float GpuMemoryClock = -1.0f;
             float GpuTemp = -1.0f;
-            float GpuClock = -1.0f;
             float[] coreNoLoad = new float[20];
-            float CpuPower = -1.0f;
             float[] coreNoTemp = new float[20];
             float[] coreNoClock = new float[20];
             float RamUsed = -1.0f;
             float RamAvail = -1.0f;
-            float UploadSpeed = -1.0f;
-            float DownloadSpeed = -1.0f;
-            float CpuFan = -1.0f;
-            int numCores = 0;
             int cpuPackageTemp = 0;
             float gpuPower = -1.0f;
             float cpuPackagePower = -1.0f;
 
-            //;
+
             StateObjClass State = (StateObjClass)StateObj;
-            // enumerating all the hardware
+
             foreach (LibreHardwareMonitor.Hardware.IHardware hw in thisComputer.Hardware)
             {
-                //Console.WriteLine("HARDWARE: " + hw.HardwareType);
                 Console.ReadLine();
-                
                 hw.Update();
-                // searching for all sensors and adding data to listbox
+
                 foreach (LibreHardwareMonitor.Hardware.ISensor s in hw.Sensors)
                 {
                     //Console.WriteLine("NAME: " + s.Name + ", TYPE: " + s.SensorType + ", VALUE: " + s.Value);
                     Console.ReadLine();
+                    
                     // CPU  
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
-                    //        {
-
-                    //            int coreid = int.Parse(s.Name.Split('#')[1]);
-                    //            int coreIndex = coreid - 1;
-                    //            numCores++;
-                    //            //string corenumber = coreid.ToString();
-                    //            //string coreNoTemp = "" + Convert.ToDouble(s.Value);
-
-                    //            coreNoTemp[coreIndex] = (float)Convert.ToDouble(s.Value);
-
-                    //            //Console.WriteLine(coreNoTempStr[coreid]);
-
-                    //        }
-                    //    }
-                    //}
-
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
                     {
                         if (s.Value != null)
                         {
                             if (s.Name.StartsWith("CPU Package"))
                             {
-
-                                //string corenumber = coreid.ToString();
-                                //string coreNoTemp = "" + Convert.ToDouble(s.Value);
-
                                 cpuPackageTemp = (int)Convert.ToDouble(s.Value);
 
                             }
@@ -687,86 +598,13 @@ namespace SerialSender
                         {
                             if (s.Name.StartsWith("CPU Package"))
                             {
-
-                                //string corenumber = coreid.ToString();
-                                //string coreNoTemp = "" + Convert.ToDouble(s.Value);
-
                                 cpuPackagePower = (float)Convert.ToDouble(s.Value);
 
                             }
                         }
                     }
 
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Fan)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float cpuFan = (float)Math.Round((double)s.Value, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "GPU":
-                    //                CpuFan = cpuFan;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Power)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float cpuPower = (float)Math.Round((double)s.Value, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "CPU Package":
-                    //                CpuPower = cpuPower;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
-                    //        {
-
-                    //            int coreid = int.Parse(s.Name.Split('#')[1]);
-                    //            int coreIndex = coreid - 1;
-
-                    //            //string corenumber = coreid.ToString();
-                    //            //string coreNoClock = "" + s.Value;
-
-                    //            coreNoClock[coreIndex] = (float)s.Value;
-
-                    //           // Console.WriteLine(coreNoClockStr[coreid]);
-
-                    //        }
-                    //    }
-                    //}
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        if (s.Name.StartsWith("CPU Core #") && s.Name.Length == 11)
-                    //        {
-
-                    //            int coreid = int.Parse(s.Name.Split('#')[1]);
-                    //            int coreIndex = coreid - 1;
-
-                    //            //string corenumber = coreid.ToString();
-                    //            //string coreNoLoad = "" + Math.Round(Convert.ToDouble(s.Value),2);
-
-                    //            coreNoLoad[coreIndex] = (float)Math.Round(Convert.ToDouble(s.Value), 2);
-
-                    //           // Console.WriteLine(coreNoLoadStr[coreid]);
-
-                    //        }
-                    //    }
-                    //}
+                    
                     // GPU
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Temperature)
                     {
@@ -788,87 +626,11 @@ namespace SerialSender
                         {
                             if (s.Name.StartsWith("GPU Power"))
                             {
-
-                                //string corenumber = coreid.ToString();
-                                //string coreNoTemp = "" + Convert.ToDouble(s.Value);
-
                                 gpuPower = (float)Convert.ToDouble(s.Value);
 
                             }
                         }
                     }
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float gpuClock = (float)Math.Round((double)s.Value,2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "GPU Core":
-                    //                GpuClock = gpuClock;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Clock)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float gpumemoryClock = (float)Math.Round((double)s.Value, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "GPU Memory":
-                    //                GpuMemoryClock = gpumemoryClock;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float gpuLoad = (float)Math.Round((double)s.Value, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "GPU Core":
-                    //                GpuLoad = gpuLoad;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Fan)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float gpuFan = (float)Math.Round((double)s.Value, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "GPU":
-                    //                GpuFan = gpuFan;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Load)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float gpuMemory = (float)Math.Round((double)s.Value, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "GPU Memory":
-                    //                GpuMemory = gpuMemory;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
 
                     // RAM
                     if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Data)
@@ -897,34 +659,6 @@ namespace SerialSender
                             }
                         }
                     }
-                    // Network
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Throughput)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float uploadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "Upload Speed":
-                    //                UploadSpeed = uploadSpeed;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
-
-                    //if (s.SensorType == LibreHardwareMonitor.Hardware.SensorType.Throughput)
-                    //{
-                    //    if (s.Value != null)
-                    //    {
-                    //        float downloadSpeed = (float)Math.Round((double)s.Value / 2600, 2);
-                    //        switch (s.Name)
-                    //        {
-                    //            case "Download Speed":
-                    //                DownloadSpeed = downloadSpeed;
-                    //                break;
-                    //        }
-                    //    }
-                    //}
                 }
             }
 
